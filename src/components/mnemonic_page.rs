@@ -20,10 +20,7 @@ impl Component for Page {
 
     fn create(ctx: &Context<Self>) -> Self {
         Self {
-            mnemonic: LocalStorage::get(KEY).unwrap_or_else(|_| {
-                LocalStorage::set(KEY, "").ok();
-                "".to_string()
-            }),
+            mnemonic: LocalStorage::get(KEY).unwrap_or_else(|_| { LocalStorage::set(KEY, "").ok(); "".to_string() }),
         }
     }
 
