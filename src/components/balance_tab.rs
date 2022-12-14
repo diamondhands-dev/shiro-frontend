@@ -1,0 +1,29 @@
+use material_yew::{MatTab, MatTabBar};
+use yew::prelude::*;
+use super::fungible_list::List as FungibleList;
+
+pub struct BalanceTab;
+
+pub enum BalanceTabMsg {
+}
+
+impl Component for BalanceTab {
+    type Message = BalanceTabMsg;
+    type Properties = ();
+
+    fn create(ctx: &Context<Self>) -> Self {
+        Self
+    }
+
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        html! {
+        <section>
+            <MatTabBar>
+                <MatTab icon="wallet" label="Fungible"/>
+                <MatTab icon="image" label="NFT" />
+            </MatTabBar>
+            <FungibleList/>
+        </section>
+        }
+    }
+}
