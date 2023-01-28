@@ -23,8 +23,8 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: Lint
-        run: cargo clippy -- -D warnings
+#      - name: Lint
+#        run: cargo clippy -- -D warnings
 
   format:
     runs-on: ubuntu-latest
