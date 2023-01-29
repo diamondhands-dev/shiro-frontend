@@ -83,7 +83,11 @@ fn app() -> Html {
     html! {
         <div>
             <div class="navbar navbar-default">
-                <a class="navbar-brand" href="javascript:void(0)">{"Shiro-wallet"}</a>
+                <a class="navbar-brand" href="/">{"Shiro-wallet"}</a>
+                <a class="navbar-link" href="bitcoin">{"bitcoin"}</a>
+                <a class="navbar-link" href="issue">{"issue"}</a>
+                <a class="navbar-link" href="mnemonic">{"mnemonic"}</a>
+                <a cless="navbar-link" href="utxos">{"utxos"}</a>
             </div>
             <BrowserRouter>
                 <Switch<Route> render={Switch::render(switch)} />
