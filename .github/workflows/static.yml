@@ -35,7 +35,7 @@ jobs:
       - name: Install `trunk`
         run: cargo install trunk
       - name: Build by `trunk`
-        run: trunk build
+        run: trunk build --release --public-url shiro-backend
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Upload artifact
