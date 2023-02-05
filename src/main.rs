@@ -1,3 +1,4 @@
+use material_yew::MatIcon;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
@@ -84,14 +85,14 @@ fn inject_navbar() -> Html {
                     <div class="container">
                         <a class="navbar-brand" href="javascript:void(0)">{"Shiro-wallet"}</a>
                         <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#n_bar" aria-controls="navbarNavAltMarkup" aria-label="Toggle navigation">
-                            <span class="material-symbols-outlined">{"menu"}</span>
+                            <MatIcon>{"menu"}</MatIcon>
                         </button>
                         <div class="collapse navbar-collapse" id="n_bar">
                             <ul class="navbar-nav active">
+                                 <li><Link<Route> classes={classes!("nav-link")} to={Route::MnemonicPageRoute}>{"Mnemonic"}</Link<Route>></li>
                                  <li><Link<Route> classes={classes!("nav-link")} to={Route::BalanceTabRoute}>{"Balnce"}</Link<Route>></li>
                                  <li><Link<Route> classes={classes!("nav-link")} to={Route::BitcoinPageRoute}>{"Bitcoin"}</Link<Route>></li>
                                  <li><Link<Route> classes={classes!("nav-link")} to={Route::IssueAssetPageRoute}>{"Issue"}</Link<Route>></li>
-                                 <li><Link<Route> classes={classes!("nav-link")} to={Route::MnemonicPageRoute}>{"Mnemonic"}</Link<Route>></li>
                                  <li><Link<Route> classes={classes!("nav-link")} to={Route::UtxosPageRoute}>{"UTXOs"}</Link<Route>></li>
                             </ul>
                         </div>
