@@ -8,7 +8,6 @@ pub struct List {
 
 pub enum Msg {
     Action(ListIndex),
-    Focus,
 }
 
 impl Component for List {
@@ -33,10 +32,6 @@ impl Component for List {
                     _ => return false,
                 };
                 true
-            }
-            Msg::Focus => {
-                self.list_link.focus_item_at_index(0);
-                false
             }
         }
     }
