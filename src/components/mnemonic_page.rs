@@ -1,22 +1,14 @@
 use bip39::{Language, Mnemonic};
 use gloo::storage::{LocalStorage, Storage};
-use material_yew::{
-    list::ListIndex, MatButton, MatList, MatListItem, MatTextField, WeakComponentLink,
-};
-use serde_derive::{Deserialize, Serialize};
+use material_yew::{MatButton, MatList, MatListItem, MatTextField};
 use yew::{function_component, html, prelude::*, use_state, Html, Properties};
 
 const KEY: &'static str = "shiro.mnemonic";
 
-pub struct MnemonicWord {
-    pub idx: isize,
-    pub word: String,
-}
-
 #[derive(Properties, PartialEq)]
 pub struct MnemonicWordProp {
     pub label: String,
-    pub word: String,
+    pub value: String,
     pub oninput: Callback<String>,
 }
 
@@ -24,30 +16,22 @@ pub struct MnemonicWordProp {
 pub fn mnemonic_word_field(props: &MnemonicWordProp) -> Html {
     html! {
         <MatListItem>
-            <MatTextField outlined=true label={props.label.clone()} oninput={props.oninput.clone()} />
+            <MatTextField outlined=true label={props.label.clone()} value={props.value.clone()} oninput={props.oninput.clone()} />
         </MatListItem>
     }
 }
 
 #[derive(Properties, PartialEq)]
 pub struct MnemonicWordListProp {
-    mnemonic: String,
+    words: Vec<String>,
     onchanged: Callback<String>,
 }
 
 #[function_component(MnemonicWordList)]
 pub fn mnemonic_word_list(props: &MnemonicWordListProp) -> Html {
-    let mut word_list = Vec::<MnemonicWord>::new();
-    for i in 0..12 {
-        word_list.push(MnemonicWord {
-            idx: i,
-            word: "".to_string(),
-        });
-    }
-
     html! {
         <>
-        { word_list.iter().map(|word| {
+        { props.words.iter().enumerate().map(|(idx, word)| {
             let oninput = {
                 let onchanged = props.onchanged.clone();
                 Callback::from(move |message: String| {
@@ -55,7 +39,7 @@ pub fn mnemonic_word_list(props: &MnemonicWordListProp) -> Html {
                 })
             };
             html! {
-                <MnemonicWordField label={(word.idx + 1).to_string()} word={word.word.clone()} {oninput} />
+                <MnemonicWordField label={(idx + 1).to_string()} value={word.clone()} {oninput} />
             }}).collect::<Html>()
         }
         </>
@@ -151,73 +135,88 @@ pub fn open_wallet_button(props: &OpenWalletButtonProps) -> Html {
     }
 }
 
-pub struct Page {
-    mnemonic: String,
-    unsaved_mnemonic: String,
-    is_invalid_mnemonic: bool,
-}
-
 #[derive(Properties, PartialEq)]
-pub struct PageProperties {}
+pub struct PageProps {}
 
-pub enum Msg {
-    ClearForm,
-    GenerateKeys,
-    OpenWallet,
-    RevertForm,
+#[function_component(MnemonicPageInner)]
+pub fn page(_: &PageProps) -> Html {
+    let mnemonic = LocalStorage::get(KEY).unwrap_or_else(|_| {
+        LocalStorage::set(KEY, "").ok();
+        "".to_string()
+    });
+    let words = use_state(|| {
+        let mut vec = Vec::<String>::new();
+        for _ in 0..12 {
+            vec.push("".to_string());
+        }
+        vec
+    });
+
+    let is_invalid_mnemonic = use_state(|| true);
+    let check_mnemonic = {
+        let words = words.clone();
+        move || {
+            let mnemonic: String = (*words).join(" ");
+            log::info!("{}", mnemonic);
+        }
+    };
+
+    let onchanged = {
+        Callback::from(&move |message: String| {
+            log::info!("{}", message);
+        })
+    };
+    let onclick_generate_keys_button = {
+        let words = words.clone();
+        Callback::from(move |_| {
+            let new_words: Vec<String> = Mnemonic::generate_in(Language::English, 12)
+                .unwrap()
+                .to_string()
+                .split_whitespace()
+                .map(|x| x.to_string())
+                .collect();
+            words.set(new_words);
+        })
+    };
+    let onclick_revert_form_button = Callback::from(|_: String| {});
+    let onclick_clear_form_button = {
+        let words = words.clone();
+        Callback::from(move |_| {
+            let mut new_words = Vec::<String>::new();
+            for _ in 0..12 {
+                new_words.push("".to_string());
+            }
+            words.set(new_words);
+        })
+    };
+    let onclick_open_wallet_button = Callback::from(|_: String| {});
+    html! {
+        <>
+            <h1>{"Fill your mnemonic word in."}</h1>
+            <MatList>
+                <MnemonicWordList words={(*words).clone()} {onchanged}/>
+            </MatList>
+            <GenerateKeysButton onclick={onclick_generate_keys_button}/>
+            <RevertFormButton onclick={onclick_revert_form_button}/>
+            <ClearFormButton onclick={onclick_clear_form_button}/>
+            <OpenWalletButton onclick={onclick_open_wallet_button} disabled={*is_invalid_mnemonic}/>
+        </>
+    }
 }
+
+pub struct Page {}
 
 impl Component for Page {
-    type Message = Msg;
-    type Properties = PageProperties;
+    type Properties = ();
+    type Message = ();
 
-    fn create(ctx: &Context<Self>) -> Self {
-        let mnemonic = LocalStorage::get(KEY).unwrap_or_else(|_| {
-            LocalStorage::set(KEY, "").ok();
-            "".to_string()
-        });
-        Self {
-            unsaved_mnemonic: mnemonic.clone(),
-            mnemonic,
-            is_invalid_mnemonic: false,
-        }
+    fn create(_: &Context<Self>) -> Self {
+        Self {}
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
-        match msg {
-            Msg::ClearForm => self.mnemonic = "".to_string(),
-            Msg::GenerateKeys => {
-                self.mnemonic = Mnemonic::generate_in(Language::English, 12)
-                    .unwrap()
-                    .to_string()
-            }
-            Msg::OpenWallet => {
-                LocalStorage::set(KEY, self.mnemonic.clone()).unwrap();
-            }
-            Msg::RevertForm => self.mnemonic = self.unsaved_mnemonic.clone(),
-        }
-        log::info!("update! {}", self.mnemonic);
-        true
-    }
-
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let link = ctx.link();
-        let onchanged = {
-            Callback::from(move |message: String| {
-                log::info!("{}", message);
-            })
-        };
+    fn view(&self, _: &Context<Self>) -> Html {
         html! {
-            <section>
-                <h1>{"Fill your mnemonic word in."}</h1>
-                <MatList>
-                    <MnemonicWordList mnemonic={self.mnemonic.clone()} {onchanged}/>
-                </MatList>
-                <GenerateKeysButton onclick={link.callback(|_|Msg::GenerateKeys)}/>
-                <RevertFormButton onclick={link.callback(|_|Msg::RevertForm)}/>
-                <ClearFormButton onclick={link.callback(|_|Msg::ClearForm)}/>
-                <OpenWalletButton onclick={link.callback(|_|Msg::OpenWallet)} disabled={self.is_invalid_mnemonic}/>
-            </section>
+            <MnemonicPageInner/>
         }
     }
 }

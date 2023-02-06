@@ -43,7 +43,7 @@ fn bitcoin_page() -> Html {
 }
 
 #[function_component(MnemonicPageRoute)]
-fn utxo_page() -> Html {
+fn mnemonic_page() -> Html {
     html! {
         <section>
             <MnemonicPage/>
@@ -61,7 +61,7 @@ fn issue_asset_page() -> Html {
 }
 
 #[function_component(UtxosPageRoute)]
-fn mnemonic_page() -> Html {
+fn utxos_page() -> Html {
     html! {
         <section>
             <UtxosPage/>
