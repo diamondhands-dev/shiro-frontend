@@ -27,55 +27,62 @@ enum Route {
 #[function_component(BalanceTabRoute)]
 fn balance_tab() -> Html {
     html! {
-        <section>
+        <>
+            {inject_navbar()}
             <BalanceTab/>
-        </section>
+        </>
     }
 }
 
 #[function_component(BitcoinPageRoute)]
 fn bitcoin_page() -> Html {
     html! {
-        <section>
+        <>
+            {inject_navbar()}
             <BitcoinPage/>
-        </section>
+        </>
     }
 }
 
 #[function_component(MnemonicPageRoute)]
 fn mnemonic_page() -> Html {
     html! {
-        <section>
+        <>
+            {inject_navbar()}
             <MnemonicPage/>
-        </section>
+        </>
     }
 }
 
 #[function_component(IssueAssetPageRoute)]
 fn issue_asset_page() -> Html {
     html! {
-        <section>
+        <>
+            {inject_navbar()}
             <IssueAssetPage/>
-        </section>
+        </>
     }
 }
 
 #[function_component(UtxosPageRoute)]
 fn utxos_page() -> Html {
     html! {
-        <section>
+        <>
+            {inject_navbar()}
             <UtxosPage/>
-        </section>
+        </>
     }
 }
 
 fn switch(routes: &Route) -> Html {
     match routes {
-        Route::BalanceTabRoute => html!( <>{inject_navbar()} <BalanceTabRoute/></> ),
-        Route::BitcoinPageRoute => html!( <>{inject_navbar()} <BitcoinPageRoute/></> ),
-        Route::IssueAssetPageRoute => html!( <>{inject_navbar()} <IssueAssetPageRoute/></> ),
-        Route::MnemonicPageRoute => html!( <>{inject_navbar()} <MnemonicPageRoute/></> ),
-        Route::UtxosPageRoute => html!( <>{inject_navbar()} <UtxosPageRoute/></> ),
+        Route::BalanceTabRoute => {
+            html!( <>{inject_navbar()} <section><BalanceTabRoute/></section></> )
+        }
+        Route::BitcoinPageRoute => html!( <BitcoinPageRoute/> ),
+        Route::IssueAssetPageRoute => html!( <IssueAssetPageRoute/> ),
+        Route::MnemonicPageRoute => html!( <MnemonicPageRoute/> ),
+        Route::UtxosPageRoute => html!( <UtxosPageRoute/> ),
     }
 }
 

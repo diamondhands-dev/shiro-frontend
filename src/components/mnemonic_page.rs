@@ -144,21 +144,30 @@ pub fn page(_: &PageProps) -> Html {
         LocalStorage::set(KEY, "").ok();
         "".to_string()
     });
-    let words = use_state(|| {
-        let mut vec = Vec::<String>::new();
-        for _ in 0..12 {
-            vec.push("".to_string());
-        }
-        vec
-    });
+    let is_invalid_mnemonic = use_state(|| mnemonic.is_empty());
+    let words = if mnemonic.is_empty() {
+        use_state(|| {
+            let mut vec = Vec::<String>::new();
+            for _ in 0..12 {
+                vec.push("".to_string());
+            }
+            vec
+        })
+    } else {
+        use_state(|| {
+            mnemonic
+                .split_whitespace()
+                .map(|x| x.to_string())
+                .collect::<Vec<String>>()
+        })
+    };
 
-    let is_invalid_mnemonic = use_state(|| true);
+    fn join_mnemonic_words(words: UseStateHandle<Vec<String>>) -> String {
+        (*words).join(" ")
+    }
+
     let check_mnemonic = {
-        let words = words.clone();
-        move || {
-            let mnemonic: String = (*words).join(" ");
-            log::info!("{}", mnemonic);
-        }
+        let mnemonic = join_mnemonic_words(words.clone());
     };
 
     let onchanged = {
@@ -167,6 +176,7 @@ pub fn page(_: &PageProps) -> Html {
         })
     };
     let onclick_generate_keys_button = {
+        let is_invalid_mnemonic = is_invalid_mnemonic.clone();
         let words = words.clone();
         Callback::from(move |_| {
             let new_words: Vec<String> = Mnemonic::generate_in(Language::English, 12)
@@ -176,10 +186,22 @@ pub fn page(_: &PageProps) -> Html {
                 .map(|x| x.to_string())
                 .collect();
             words.set(new_words);
+            is_invalid_mnemonic.set(false); // Generated mnemonic must be valid.
         })
     };
-    let onclick_revert_form_button = Callback::from(|_: String| {});
+    let onclick_revert_form_button = {
+        let words = words.clone();
+        Callback::from(move |_| {
+            words.set(
+                mnemonic
+                    .split_whitespace()
+                    .map(|x| x.to_string())
+                    .collect::<Vec<String>>(),
+            );
+        })
+    };
     let onclick_clear_form_button = {
+        let is_invalid_mnemonic = is_invalid_mnemonic.clone();
         let words = words.clone();
         Callback::from(move |_| {
             let mut new_words = Vec::<String>::new();
@@ -187,9 +209,17 @@ pub fn page(_: &PageProps) -> Html {
                 new_words.push("".to_string());
             }
             words.set(new_words);
+            is_invalid_mnemonic.set(true); // Empty mnemonic will be invalid.
         })
     };
-    let onclick_open_wallet_button = Callback::from(|_: String| {});
+    let onclick_open_wallet_button = {
+        let words = words.clone();
+        Callback::from(move |_| {
+            let mnemonic = join_mnemonic_words(words.clone());
+            LocalStorage::set(KEY, mnemonic).ok();
+        })
+    };
+
     html! {
         <>
             <h1>{"Fill your mnemonic word in."}</h1>
@@ -199,7 +229,7 @@ pub fn page(_: &PageProps) -> Html {
             <GenerateKeysButton onclick={onclick_generate_keys_button}/>
             <RevertFormButton onclick={onclick_revert_form_button}/>
             <ClearFormButton onclick={onclick_clear_form_button}/>
-            <OpenWalletButton onclick={onclick_open_wallet_button} disabled={*is_invalid_mnemonic}/>
+            <OpenWalletButton onclick={onclick_open_wallet_button} disabled={(*is_invalid_mnemonic).clone()}/>
         </>
     }
 }

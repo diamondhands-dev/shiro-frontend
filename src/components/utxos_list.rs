@@ -14,7 +14,7 @@ impl Component for List {
     type Message = Msg;
     type Properties = ();
 
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(_: &Context<Self>) -> Self {
         Self {
             selected_index: 0,
             list_link: WeakComponentLink::default(),

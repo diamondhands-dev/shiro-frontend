@@ -10,16 +10,15 @@ impl Component for Page {
     type Message = Msg;
     type Properties = ();
 
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(_: &Context<Self>) -> Self {
         Self {}
     }
 
-    fn update(&mut self, _: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, _: &Context<Self>, _: Self::Message) -> bool {
         true
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let link = ctx.link();
+    fn view(&self, _: &Context<Self>) -> Html {
         html! {
             <div class="container">
                 <h1 style="text-align: center">{"bitcoin"}</h1>
