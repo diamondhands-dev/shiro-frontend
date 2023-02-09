@@ -2,7 +2,7 @@ use material_yew::MatIcon;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use self::components::balance_tab::BalanceTab;
+use self::components::balance_page::Page as BalancePage;
 use self::components::bitcoin_page::Page as BitcoinPage;
 use self::components::issue_asset_page::Page as IssueAssetPage;
 use self::components::mnemonic_page::Page as MnemonicPage;
@@ -13,7 +13,7 @@ mod components;
 #[derive(Clone, Routable, PartialEq)]
 enum Route {
     #[at("/")]
-    BalanceTabRoute,
+    BalancePageRoute,
     #[at("/bitcoin")]
     BitcoinPageRoute,
     #[at("/issue")]
@@ -24,12 +24,12 @@ enum Route {
     UtxosPageRoute,
 }
 
-#[function_component(BalanceTabRoute)]
+#[function_component(BalancePageRoute)]
 fn balance_tab() -> Html {
     html! {
         <>
             {inject_navbar()}
-            <BalanceTab/>
+            <BalancePage/>
         </>
     }
 }
@@ -76,9 +76,7 @@ fn utxos_page() -> Html {
 
 fn switch(routes: &Route) -> Html {
     match routes {
-        Route::BalanceTabRoute => {
-            html!( <>{inject_navbar()} <section><BalanceTabRoute/></section></> )
-        }
+        Route::BalancePageRoute => html!( <BalancePageRoute/> ),
         Route::BitcoinPageRoute => html!( <BitcoinPageRoute/> ),
         Route::IssueAssetPageRoute => html!( <IssueAssetPageRoute/> ),
         Route::MnemonicPageRoute => html!( <MnemonicPageRoute/> ),
@@ -97,7 +95,7 @@ fn inject_navbar() -> Html {
                         <div class="collapse navbar-collapse" id="n_bar">
                             <ul class="navbar-nav active">
                                  <li><Link<Route> classes={classes!("nav-link")} to={Route::MnemonicPageRoute}>{"Mnemonic"}</Link<Route>></li>
-                                 <li><Link<Route> classes={classes!("nav-link")} to={Route::BalanceTabRoute}>{"Balnce"}</Link<Route>></li>
+                                 <li><Link<Route> classes={classes!("nav-link")} to={Route::BalancePageRoute}>{"Balance"}</Link<Route>></li>
                                  <li><Link<Route> classes={classes!("nav-link")} to={Route::BitcoinPageRoute}>{"Bitcoin"}</Link<Route>></li>
                                  <li><Link<Route> classes={classes!("nav-link")} to={Route::IssueAssetPageRoute}>{"Issue"}</Link<Route>></li>
                                  <li><Link<Route> classes={classes!("nav-link")} to={Route::UtxosPageRoute}>{"UTXOs"}</Link<Route>></li>

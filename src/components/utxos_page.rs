@@ -1,5 +1,14 @@
-use super::utxos_list::List as UtxosList;
 use yew::prelude::*;
+
+#[derive(Properties, PartialEq)]
+pub struct UtxosListProps {}
+
+#[function_component(UtxosList)]
+pub fn utxo_list(_props: &UtxosListProps) -> Html {
+    html! {
+        <></>
+    }
+}
 
 pub struct Page {}
 
@@ -19,9 +28,9 @@ impl Component for Page {
 
     fn view(&self, _: &Context<Self>) -> Html {
         html! {
-            <section>
+            <>
                 <UtxosList/>
-            </section>
+            </>
         }
     }
 }
