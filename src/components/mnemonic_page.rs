@@ -1,6 +1,10 @@
-use bip39::{Language, Mnemonic};
+use bdk::bitcoin::{secp256k1::Secp256k1, Network};
+use bdk::keys::bip39::{Language, Mnemonic};
+use bdk::keys::{DerivableKey, ExtendedKey};
 use gloo::storage::{LocalStorage, Storage};
 use material_yew::{MatButton, MatList, MatListItem, MatTextField};
+use serde::{Deserialize, Serialize};
+use wasm_bindgen_futures::spawn_local;
 use yew::{function_component, html, prelude::*, use_state, Html, Properties};
 
 const KEY: &'static str = "shiro.mnemonic";
@@ -39,7 +43,7 @@ pub fn mnemonic_word_list(props: &MnemonicWordListProp) -> Html {
                 })
             };
             html! {
-                <MnemonicWordField label={(idx + 1).to_string()} value={word.clone()} {oninput} />
+                <MnemonicWordField label={(idx + 1).to_string()} value={word.clone()} {oninput}/>
             }}).collect::<Html>()
         }
         </>
@@ -48,7 +52,7 @@ pub fn mnemonic_word_list(props: &MnemonicWordListProp) -> Html {
 
 #[derive(Properties, PartialEq)]
 pub struct GenerateKeysButtonProps {
-    onclick: Callback<String>,
+    onclick: Callback<MouseEvent>,
 }
 
 #[function_component(GenerateKeysButton)]
@@ -57,7 +61,7 @@ pub fn generate_keys_button(props: &GenerateKeysButtonProps) -> Html {
         let onclick = props.onclick.clone();
         Callback::from(move |e: MouseEvent| {
             e.default_prevented();
-            onclick.emit("".to_string());
+            onclick.emit(e);
         })
     };
 
@@ -70,7 +74,7 @@ pub fn generate_keys_button(props: &GenerateKeysButtonProps) -> Html {
 
 #[derive(Properties, PartialEq)]
 pub struct RevertFormButtonProps {
-    onclick: Callback<String>,
+    onclick: Callback<MouseEvent>,
 }
 
 #[function_component(RevertFormButton)]
@@ -79,7 +83,7 @@ pub fn revert_form_button(props: &RevertFormButtonProps) -> Html {
         let onclick = props.onclick.clone();
         Callback::from(move |e: MouseEvent| {
             e.default_prevented();
-            onclick.emit("".to_string());
+            onclick.emit(e);
         })
     };
 
@@ -92,7 +96,7 @@ pub fn revert_form_button(props: &RevertFormButtonProps) -> Html {
 
 #[derive(Properties, PartialEq)]
 pub struct ClearFormButtonProps {
-    onclick: Callback<String>,
+    onclick: Callback<MouseEvent>,
 }
 
 #[function_component(ClearFormButton)]
@@ -101,7 +105,7 @@ pub fn clear_form_button(props: &ClearFormButtonProps) -> Html {
         let onclick = props.onclick.clone();
         Callback::from(move |e: MouseEvent| {
             e.default_prevented();
-            onclick.emit("".to_string());
+            onclick.emit(e);
         })
     };
 
@@ -114,7 +118,7 @@ pub fn clear_form_button(props: &ClearFormButtonProps) -> Html {
 
 #[derive(Properties, PartialEq)]
 pub struct OpenWalletButtonProps {
-    onclick: Callback<String>,
+    onclick: Callback<MouseEvent>,
     disabled: bool,
 }
 
@@ -124,7 +128,7 @@ pub fn open_wallet_button(props: &OpenWalletButtonProps) -> Html {
         let onclick = props.onclick.clone();
         Callback::from(move |e: MouseEvent| {
             e.default_prevented();
-            onclick.emit("".to_string());
+            onclick.emit(e);
         })
     };
 
@@ -162,17 +166,9 @@ pub fn page(_: &PageProps) -> Html {
         })
     };
 
-    fn join_mnemonic_words(words: UseStateHandle<Vec<String>>) -> String {
-        (*words).join(" ")
-    }
-
-    let check_mnemonic = {
-        let mnemonic = join_mnemonic_words(words.clone());
-    };
-
     let onchanged = {
         Callback::from(&move |message: String| {
-            log::info!("{}", message);
+            log::info!("onchanged {}", message);
         })
     };
     let onclick_generate_keys_button = {
@@ -190,14 +186,18 @@ pub fn page(_: &PageProps) -> Html {
         })
     };
     let onclick_revert_form_button = {
+        let is_invalid_mnemonic = is_invalid_mnemonic.clone();
         let words = words.clone();
         Callback::from(move |_| {
-            words.set(
-                mnemonic
-                    .split_whitespace()
-                    .map(|x| x.to_string())
-                    .collect::<Vec<String>>(),
-            );
+            if !mnemonic.is_empty() {
+                words.set(
+                    mnemonic
+                        .split_whitespace()
+                        .map(|x| x.to_string())
+                        .collect::<Vec<String>>(),
+                );
+                is_invalid_mnemonic.set(false);
+            }
         })
     };
     let onclick_clear_form_button = {
@@ -213,10 +213,38 @@ pub fn page(_: &PageProps) -> Html {
         })
     };
     let onclick_open_wallet_button = {
+        let is_invalid_mnemonic = is_invalid_mnemonic.clone();
         let words = words.clone();
         Callback::from(move |_| {
-            let mnemonic = join_mnemonic_words(words.clone());
-            LocalStorage::set(KEY, mnemonic).ok();
+            let str = words.clone().join(" ");
+            match Mnemonic::parse(&str) {
+                Ok(mnemonic) => {
+                    let xkey: ExtendedKey = mnemonic
+                        .clone()
+                        .into_extended_key()
+                        .expect("a valid key should have been provided");
+                    let pubkey = xkey
+                        .into_xpub(Network::Testnet, &Secp256k1::new())
+                        .to_string();
+                    log::info!("{:#}", mnemonic);
+                    let wallet = WalletParams {
+                        mnemonic: str.to_string(),
+                        pubkey,
+                    };
+                    let client = reqwest::Client::new();
+                    spawn_local(async move {
+                        let res = client
+                            .put("http://shiro.westus2.cloudapp.azure.com:4320/wallet")
+                            //.put("http://localhost:8080/wallet")
+                            .json(&wallet)
+                            .send()
+                            .await;
+                        log::info!("{:#?}", res);
+                    });
+                }
+                Err(_) => is_invalid_mnemonic.set(true),
+            };
+            LocalStorage::set(KEY, str).ok();
         })
     };
 
@@ -225,13 +253,19 @@ pub fn page(_: &PageProps) -> Html {
             <h1>{"Fill your mnemonic word in."}</h1>
             <MatList>
                 <MnemonicWordList words={(*words).clone()} {onchanged}/>
+                <GenerateKeysButton onclick={onclick_generate_keys_button}/>
+                <OpenWalletButton onclick={onclick_open_wallet_button} disabled={(*is_invalid_mnemonic).clone()}/>
+                <ClearFormButton onclick={onclick_clear_form_button}/>
+                <RevertFormButton onclick={onclick_revert_form_button}/>
             </MatList>
-            <GenerateKeysButton onclick={onclick_generate_keys_button}/>
-            <RevertFormButton onclick={onclick_revert_form_button}/>
-            <ClearFormButton onclick={onclick_clear_form_button}/>
-            <OpenWalletButton onclick={onclick_open_wallet_button} disabled={(*is_invalid_mnemonic).clone()}/>
         </>
     }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct WalletParams {
+    mnemonic: String,
+    pubkey: String,
 }
 
 pub struct Page {}
