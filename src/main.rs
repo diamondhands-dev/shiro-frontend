@@ -1,7 +1,11 @@
+use material_yew::MatIcon;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use self::components::balance_tab::BalanceTab;
+use self::components::asset_balance_page::Page as AssetBalancePage;
+use self::components::asset_receive_page::Page as AssetReceivePage;
+use self::components::asset_send_page::Page as AssetSendPage;
+use self::components::balance_page::Page as BalancePage;
 use self::components::bitcoin_page::Page as BitcoinPage;
 use self::components::issue_asset_page::Page as IssueAssetPage;
 use self::components::mnemonic_page::Page as MnemonicPage;
@@ -12,69 +16,156 @@ mod components;
 #[derive(Clone, Routable, PartialEq)]
 enum Route {
     #[at("/")]
-    BalanceTabRoute,
+    MnemonicPageRoute,
     #[at("/bitcoin")]
     BitcoinPageRoute,
     #[at("/issue")]
     IssueAssetPageRoute,
-    #[at("/mnemonic")]
-    MnemonicPageRoute,
     #[at("/utxos")]
     UtxosPageRoute,
+    #[at("/balance")]
+    BalancePageRoute,
+    #[at("/balance/receive/:asset_id")]
+    AssetReceivePageRoute { asset_id: String },
+    #[at("/balance/send/:asset_id")]
+    AssetSendPageRoute { asset_id: String },
+    #[at("/balance/:asset_id")]
+    AssetBalancePageRoute { asset_id: String },
 }
 
-#[function_component(BalanceTabRoute)]
-fn balance_tab() -> Html {
+#[derive(Properties, PartialEq)]
+pub struct AssetBalancePageRouteProp {
+    asset_id: String,
+}
+
+#[function_component(AssetBalancePageRoute)]
+fn asset_balance_page(prop: &AssetBalancePageRouteProp) -> Html {
     html! {
-        <section>
-            <BalanceTab/>
-        </section>
+        <>
+            {inject_navbar()}
+            <AssetBalancePage asset_id={prop.asset_id.clone()}/>
+        </>
+    }
+}
+
+#[derive(Properties, PartialEq)]
+pub struct AssetReceivePageRouteProp {
+    asset_id: String,
+}
+
+#[function_component(AssetReceivePageRoute)]
+fn asset_receive_page(prop: &AssetReceivePageRouteProp) -> Html {
+    html! {
+        <>
+            {inject_navbar()}
+            <AssetReceivePage asset_id={prop.asset_id.clone()}/>
+        </>
+    }
+}
+
+#[derive(Properties, PartialEq)]
+pub struct AssetSendPageRouteProp {
+    asset_id: String,
+}
+
+#[function_component(AssetSendPageRoute)]
+fn asset_send_page(prop: &AssetSendPageRouteProp) -> Html {
+    html! {
+        <>
+            {inject_navbar()}
+            <AssetSendPage asset_id={prop.asset_id.clone()}/>
+        </>
+    }
+}
+
+#[function_component(BalancePageRoute)]
+fn balance_page() -> Html {
+    html! {
+        <>
+            {inject_navbar()}
+            <BalancePage/>
+        </>
     }
 }
 
 #[function_component(BitcoinPageRoute)]
 fn bitcoin_page() -> Html {
     html! {
-        <section>
+        <>
+            {inject_navbar()}
             <BitcoinPage/>
-        </section>
+        </>
     }
 }
 
 #[function_component(MnemonicPageRoute)]
-fn utxo_page() -> Html {
+fn mnemonic_page() -> Html {
     html! {
-        <section>
+        <>
+            {inject_navbar()}
             <MnemonicPage/>
-        </section>
+        </>
     }
 }
 
 #[function_component(IssueAssetPageRoute)]
 fn issue_asset_page() -> Html {
     html! {
-        <section>
+        <>
+            {inject_navbar()}
             <IssueAssetPage/>
-        </section>
+        </>
     }
 }
 
 #[function_component(UtxosPageRoute)]
-fn mnemonic_page() -> Html {
+fn utxos_page() -> Html {
     html! {
-        <section>
+        <>
+            {inject_navbar()}
             <UtxosPage/>
-        </section>
+        </>
     }
 }
 
 fn switch(routes: &Route) -> Html {
     match routes {
-        Route::BalanceTabRoute => html!( <BalanceTabRoute/> ),
+        Route::BalancePageRoute => html!( <BalancePageRoute/> ),
         Route::BitcoinPageRoute => html!( <BitcoinPageRoute/> ),
         Route::IssueAssetPageRoute => html!( <IssueAssetPageRoute/> ),
         Route::MnemonicPageRoute => html!( <MnemonicPageRoute/> ),
         Route::UtxosPageRoute => html!( <UtxosPageRoute/> ),
+        Route::AssetBalancePageRoute { asset_id } => {
+            html!( <AssetBalancePageRoute asset_id={asset_id.clone()} /> )
+        }
+        Route::AssetReceivePageRoute { asset_id } => {
+            html!( <AssetReceivePageRoute asset_id={asset_id.clone()} /> )
+        }
+        Route::AssetSendPageRoute { asset_id } => {
+            html!( <AssetSendPageRoute asset_id={asset_id.clone()} /> )
+        }
+    }
+}
+
+fn inject_navbar() -> Html {
+    html! {
+                <nav class="navbar navbar-expand-lg">
+                    <div class="container">
+                        <a class="navbar-brand" href="javascript:void(0)">{"Shiro-wallet"}</a>
+                        <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#n_bar" aria-controls="navbarNavAltMarkup" aria-label="Toggle navigation">
+                            <MatIcon>{"menu"}</MatIcon>
+                        </button>
+                        <div class="collapse navbar-collapse" id="n_bar">
+                            <ul class="navbar-nav active">
+                                 <li><Link<Route> classes={classes!("nav-link")} to={Route::MnemonicPageRoute}>{"Mnemonic"}</Link<Route>></li>
+                                 <li><Link<Route> classes={classes!("nav-link")} to={Route::BalancePageRoute}>{"Balance"}</Link<Route>></li>
+                                 <li><Link<Route> classes={classes!("nav-link")} to={Route::BitcoinPageRoute}>{"Bitcoin"}</Link<Route>></li>
+                                 <li><Link<Route> classes={classes!("nav-link")} to={Route::IssueAssetPageRoute}>{"Issue"}</Link<Route>></li>
+                                 <li><Link<Route> classes={classes!("nav-link")} to={Route::UtxosPageRoute}>{"UTXOs"}</Link<Route>></li>
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
     }
 }
 
@@ -82,13 +173,6 @@ fn switch(routes: &Route) -> Html {
 fn app() -> Html {
     html! {
         <div>
-            <div class="navbar navbar-default">
-                <a class="navbar-brand" href="/">{"Shiro-wallet"}</a>
-                <a class="navbar-link" href="bitcoin">{"bitcoin"}</a>
-                <a class="navbar-link" href="issue">{"issue"}</a>
-                <a class="navbar-link" href="mnemonic">{"mnemonic"}</a>
-                <a cless="navbar-link" href="utxos">{"utxos"}</a>
-            </div>
             <BrowserRouter>
                 <Switch<Route> render={Switch::render(switch)} />
             </BrowserRouter>
@@ -98,4 +182,5 @@ fn app() -> Html {
 
 fn main() {
     yew::start_app::<Main>();
+    wasm_logger::init(wasm_logger::Config::default());
 }
