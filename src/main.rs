@@ -2,6 +2,7 @@ use material_yew::MatIcon;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
+use self::components::asset_balance_page::Page as AssetBalancePage;
 use self::components::balance_page::Page as BalancePage;
 use self::components::bitcoin_page::Page as BitcoinPage;
 use self::components::issue_asset_page::Page as IssueAssetPage;
@@ -22,6 +23,23 @@ enum Route {
     MnemonicPageRoute,
     #[at("/utxos")]
     UtxosPageRoute,
+    #[at("/balance/:asset_id")]
+    AssetBalancePageRoute { asset_id: String },
+}
+
+#[derive(Properties, PartialEq)]
+pub struct AssetBalancePageRouteProp {
+    asset_id: String,
+}
+
+#[function_component(AssetBalancePageRoute)]
+fn asset_balance_page(prop: &AssetBalancePageRouteProp) -> Html {
+    html! {
+        <>
+            {inject_navbar()}
+            <AssetBalancePage asset_id={prop.asset_id.clone()}/>
+        </>
+    }
 }
 
 #[function_component(BalancePageRoute)]
@@ -81,6 +99,9 @@ fn switch(routes: &Route) -> Html {
         Route::IssueAssetPageRoute => html!( <IssueAssetPageRoute/> ),
         Route::MnemonicPageRoute => html!( <MnemonicPageRoute/> ),
         Route::UtxosPageRoute => html!( <UtxosPageRoute/> ),
+        Route::AssetBalancePageRoute { asset_id } => {
+            html!( <AssetBalancePageRoute asset_id={asset_id.clone()} /> )
+        }
     }
 }
 
@@ -110,13 +131,6 @@ fn inject_navbar() -> Html {
 fn app() -> Html {
     html! {
         <div>
-            <div class="navbar navbar-default">
-                <a class="navbar-brand" href="/">{"Shiro-wallet"}</a>
-                <a class="navbar-link" href="bitcoin">{"bitcoin"}</a>
-                <a class="navbar-link" href="issue">{"issue"}</a>
-                <a class="navbar-link" href="mnemonic">{"mnemonic"}</a>
-                <a cless="navbar-link" href="utxos">{"utxos"}</a>
-            </div>
             <BrowserRouter>
                 <Switch<Route> render={Switch::render(switch)} />
             </BrowserRouter>

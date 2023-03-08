@@ -1,8 +1,10 @@
+use crate::Route;
 use ::material_yew::{MatTab, MatTabBar};
 use serde::Deserialize;
 use serde::Serialize;
 use wasm_bindgen_futures::spawn_local;
 use yew::{function_component, html, prelude::*, use_state, Html, Properties};
+use yew_router::prelude::Link;
 
 /// The type of an asset
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
@@ -15,40 +17,51 @@ pub enum AssetType {
 
 #[derive(Deserialize, Serialize)]
 pub struct AssetsParams {
-    filter_asset_types: Vec<AssetType>,
+    pub filter_asset_types: Vec<AssetType>,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 pub struct Balance {
-    settled: String,
-    future: String,
-    spendable: String,
+    pub settled: String,
+    pub future: String,
+    pub spendable: String,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 pub struct Media {
     file_path: String,
     mime: String,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 pub struct AssetRgb20 {
-    asset_id: String,
-    ticker: String,
-    name: String,
-    precision: u8,
-    balance: Balance,
+    pub asset_id: String,
+    pub ticker: String,
+    pub name: String,
+    pub precision: u8,
+    pub balance: Balance,
+}
+
+#[derive(Deserialize, Serialize, Clone)]
+pub struct AssetRgb121 {
+    pub asset_id: String,
+    pub name: String,
+    pub precision: u8,
+    pub description: Option<String>,
+    pub balance: Balance,
+    pub data_paths: Vec<Media>,
+    pub parent_id: Option<String>,
 }
 
 #[derive(Deserialize, Serialize)]
-pub struct AssetRgb121 {
-    asset_id: String,
-    name: String,
-    precision: u8,
-    description: Option<String>,
-    balance: Balance,
-    data_paths: Vec<Media>,
-    parent_id: Option<String>,
+pub struct Assets {
+    pub rgb20: Vec<AssetRgb20>,
+    pub rgb121: Vec<AssetRgb121>,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct AssetsResult {
+    pub assets: Assets,
 }
 
 enum Tabs {
@@ -76,7 +89,8 @@ pub fn page(_props: &BalancePageProps) -> Html {
 
     let content = {
         let client = reqwest::Client::new();
-        let list = fungible_list.clone();
+        let f_list = fungible_list.clone();
+        let n_list = nft_list.clone();
         spawn_local(async move {
             let res = client
                 .put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/assets")
@@ -85,18 +99,34 @@ pub fn page(_props: &BalancePageProps) -> Html {
                 })
                 .send()
                 .await;
-            list.set(vec![AssetRgb20 {
-                asset_id: "hoge".to_string(),
-                ticker: "FAKEMONA".to_string(),
-                name: "Fake Monacoin".to_string(),
-                precision: 8,
-                balance: Balance {
-                    settled: "0".to_string(),
-                    future: "0".to_string(),
-                    spendable: "1".to_string(),
+            match res {
+                Ok(res) => match res.json::<AssetsResult>().await {
+                    Ok(json) => {
+                        f_list.set(json.assets.rgb20);
+                        //mock start
+                        f_list.set(vec![AssetRgb20 {
+                            asset_id: "hoge".to_string(),
+                            ticker: "FAKEMONA".to_string(),
+                            name: "Fake Monacoin".to_string(),
+                            precision: 8,
+                            balance: Balance {
+                                settled: "0".to_string(),
+                                future: "0".to_string(),
+                                spendable: "1".to_string(),
+                            },
+                        }]);
+                        //mock end
+                        n_list.set(json.assets.rgb121);
+                        log::info!("Got assets");
+                    }
+                    Err(e) => {
+                        log::error!("{:?}", e);
+                    }
                 },
-            }]);
-            log::info!("get {:?}", res);
+                Err(e) => {
+                    log::error!("{:?}", e);
+                }
+            }
         });
         match *tab {
             Tabs::Fungible => html! {
@@ -105,11 +135,13 @@ pub fn page(_props: &BalancePageProps) -> Html {
                     (*fungible_list).iter().enumerate().map(|(_,asset)| {
                         let spendable = asset.balance.spendable.clone().parse::<f64>().unwrap();
                         html! {
+                            <Link<Route> to={Route::AssetBalancePageRoute {asset_id: asset.asset_id.clone()}}>
                             <div class="container">
                             <div> {asset.asset_id.clone()} </div>
                             <div> {asset.ticker.clone()} {"("} {asset.name.clone()} {")"}</div>
                             <div> {spendable / 10f64.powi(asset.precision as i32)} </div>
                             </div>
+                            </Link<Route>>
                         }}).collect::<Html>()
                 }
                 </>
