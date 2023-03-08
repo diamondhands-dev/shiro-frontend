@@ -8,14 +8,13 @@ pub struct List {
 
 pub enum Msg {
     Action(ListIndex),
-    Focus,
 }
 
 impl Component for List {
     type Message = Msg;
     type Properties = ();
 
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(_: &Context<Self>) -> Self {
         Self {
             selected_index: 0,
             list_link: WeakComponentLink::default(),
@@ -33,10 +32,6 @@ impl Component for List {
                     _ => return false,
                 };
                 true
-            }
-            Msg::Focus => {
-                self.list_link.focus_item_at_index(2);
-                false
             }
         }
     }

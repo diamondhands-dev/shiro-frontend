@@ -1,5 +1,14 @@
-use super::utxos_list::List as UtxosList;
 use yew::prelude::*;
+
+#[derive(Properties, PartialEq)]
+pub struct UtxosListProps {}
+
+#[function_component(UtxosList)]
+pub fn utxo_list(_props: &UtxosListProps) -> Html {
+    html! {
+        <></>
+    }
+}
 
 pub struct Page {}
 
@@ -9,20 +18,19 @@ impl Component for Page {
     type Message = Msg;
     type Properties = ();
 
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(_: &Context<Self>) -> Self {
         Self {}
     }
 
-    fn update(&mut self, _: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, _: &Context<Self>, _: Self::Message) -> bool {
         true
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let link = ctx.link();
+    fn view(&self, _: &Context<Self>) -> Html {
         html! {
-            <section>
+            <>
                 <UtxosList/>
-            </section>
+            </>
         }
     }
 }
