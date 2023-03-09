@@ -4,12 +4,33 @@ use wasm_bindgen_futures::spawn_local;
 use yew::{
     function_component, html, prelude::*, use_state, virtual_dom::AttrValue, Html, Properties,
 };
+use yew_router::prelude::*;
 
 enum PageMode {
     RGB20,
     RGB121,
     UNKNOWN,
 }
+#[derive(Properties, PartialEq)]
+pub struct SendButtonProp {
+    asset_id: String,
+}
+
+#[function_component(SendButton)]
+fn send_button(props: &SendButtonProp) -> Html {
+    let navigator = use_history().unwrap();
+    let asset_id = props.asset_id.clone();
+    let onclick = Callback::from(move |_| {
+        let asset_id = asset_id.clone();
+        navigator.push(crate::Route::AssetSendPageRoute { asset_id });
+    });
+    html! {
+        <div {onclick}>
+            <MatButton label="Send" icon={AttrValue::from("arrow_outward")} raised=true />
+        </div>
+    }
+}
+
 #[derive(Properties, PartialEq)]
 pub struct AssetBalancePageInnerProp {
     asset_id: String,
@@ -24,26 +45,13 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
     let total_balance = use_state(|| 0.0f64);
 
     let onload = {
-        log::info!("hogehoge");
         match *page_mode {
             PageMode::UNKNOWN => {
-                page_mode.set(PageMode::RGB20);
-                asset_id.set("gugahoge".to_string());
-                log::info!("hoge");
-            }
-            _ => {
-                log::info!("hoge2");
-            }
-        };
-        match *page_mode {
-            PageMode::UNKNOWN => {
-                log::info!("hoge5");
                 let client = reqwest::Client::new();
                 let name = name.clone();
                 let ticker = ticker.clone();
                 let total_balance = total_balance.clone();
                 spawn_local(async move {
-                    log::info!("hoge1");
                     let res = client
                         .put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/assets")
                         .json(&AssetsParams {
@@ -114,11 +122,11 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                 </div>
                 <div class="container">
                     <div class="row justify-content-evenly">
-                    <div class="col-4">
-                        <MatButton label="Receive" icon={AttrValue::from("call_received")} raised=true/>
-                    </div>
-                    <div class="col-4">
-                        <MatButton label="Send" icon={AttrValue::from("arrow_outward")} raised=true/>
+                        <div class="col-4">
+                            <MatButton label="Receive" icon={AttrValue::from("call_received")} raised=true/>
+                        </div>
+                        <div class="col-4">
+                            <SendButton asset_id={prop.asset_id.clone()}/>
                         </div>
                     </div>
                 </div>

@@ -3,6 +3,7 @@ use yew::prelude::*;
 use yew_router::prelude::*;
 
 use self::components::asset_balance_page::Page as AssetBalancePage;
+use self::components::asset_send_page::Page as AssetSendPage;
 use self::components::balance_page::Page as BalancePage;
 use self::components::bitcoin_page::Page as BitcoinPage;
 use self::components::issue_asset_page::Page as IssueAssetPage;
@@ -23,6 +24,8 @@ enum Route {
     MnemonicPageRoute,
     #[at("/utxos")]
     UtxosPageRoute,
+    #[at("/balance/send/:asset_id")]
+    AssetSendPageRoute { asset_id: String },
     #[at("/balance/:asset_id")]
     AssetBalancePageRoute { asset_id: String },
 }
@@ -38,6 +41,21 @@ fn asset_balance_page(prop: &AssetBalancePageRouteProp) -> Html {
         <>
             {inject_navbar()}
             <AssetBalancePage asset_id={prop.asset_id.clone()}/>
+        </>
+    }
+}
+
+#[derive(Properties, PartialEq)]
+pub struct AssetSendPageRouteProp {
+    asset_id: String,
+}
+
+#[function_component(AssetSendPageRoute)]
+fn asset_send_page(prop: &AssetBalancePageRouteProp) -> Html {
+    html! {
+        <>
+            {inject_navbar()}
+            <AssetSendPage asset_id={prop.asset_id.clone()}/>
         </>
     }
 }
@@ -101,6 +119,9 @@ fn switch(routes: &Route) -> Html {
         Route::UtxosPageRoute => html!( <UtxosPageRoute/> ),
         Route::AssetBalancePageRoute { asset_id } => {
             html!( <AssetBalancePageRoute asset_id={asset_id.clone()} /> )
+        }
+        Route::AssetSendPageRoute { asset_id } => {
+            html!( <AssetSendPageRoute asset_id={asset_id.clone()} /> )
         }
     }
 }

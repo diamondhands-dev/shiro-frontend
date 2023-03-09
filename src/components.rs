@@ -1,4 +1,5 @@
 pub mod asset_balance_page;
+pub mod asset_send_page;
 pub mod balance_page;
 pub mod bitcoin_page;
 pub mod issue_asset_page;
