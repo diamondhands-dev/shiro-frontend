@@ -104,7 +104,7 @@ pub fn page(_props: &BalancePageProps) -> Html {
                 .await;
             match res {
                 Ok(res) => match res.json::<AssetsResult>().await {
-                Ok(json) => {
+                    Ok(json) => {
                         f_list.set(json.assets.rgb20);
                         //mock start
                         /*
@@ -172,7 +172,7 @@ pub fn page(_props: &BalancePageProps) -> Html {
             },
         }
     };
-    
+
     html! {
         <>
             <MatTabBar onactivated={on_activated}>
@@ -193,7 +193,7 @@ impl Component for Page {
     type Message = ();
 
     fn create(_: &Context<Self>) -> Self {
-        Self {}        
+        Self {}
     }
 
     fn view(&self, _: &Context<Self>) -> Html {
