@@ -6,6 +6,7 @@ use material_yew::{MatButton, MatList, MatListItem, MatTextField};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 use yew::{function_component, html, prelude::*, use_state, Html, Properties};
+use yew_router::prelude::*;
 
 const KEY: &'static str = "shiro.mnemonic";
 
@@ -125,10 +126,12 @@ pub struct OpenWalletButtonProps {
 #[function_component(OpenWalletButton)]
 pub fn open_wallet_button(props: &OpenWalletButtonProps) -> Html {
     let onclick = {
+        let navigator = use_history().unwrap();
         let onclick = props.onclick.clone();
         Callback::from(move |e: MouseEvent| {
             e.default_prevented();
             onclick.emit(e);
+            navigator.push(crate::Route::BalancePageRoute);
         })
     };
 

@@ -1279,6 +1279,7 @@ dependencies = [
  "getrandom",
  "gloo 0.5.0",
  "gloo-storage",
+ "gloo-utils",
  "log",
  "material-yew",
  "qrcode",

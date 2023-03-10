@@ -1,4 +1,5 @@
 use super::balance_page::{AssetType, AssetsParams, AssetsResult};
+use super::common::RefreshButton;
 use material_yew::MatButton;
 use wasm_bindgen_futures::spawn_local;
 use yew::{
@@ -11,13 +12,30 @@ enum PageMode {
     RGB121,
     UNKNOWN,
 }
+
 #[derive(Properties, PartialEq)]
-pub struct SendButtonProp {
-    asset_id: String,
+pub struct SendReceiveButtonProp {
+    pub asset_id: String,
+    pub label: String,
+}
+
+#[function_component(ReceiveButton)]
+pub fn receive_button(props: &SendReceiveButtonProp) -> Html {
+    let navigator = use_history().unwrap();
+    let asset_id = props.asset_id.clone();
+    let onclick = Callback::from(move |_| {
+        let asset_id = asset_id.clone();
+        navigator.push(crate::Route::AssetReceivePageRoute { asset_id });
+    });
+    html! {
+        <div {onclick}>
+            <MatButton label={props.label.clone()} icon={AttrValue::from("call_received")} raised=true />
+        </div>
+    }
 }
 
 #[function_component(SendButton)]
-fn send_button(props: &SendButtonProp) -> Html {
+fn send_button(props: &SendReceiveButtonProp) -> Html {
     let navigator = use_history().unwrap();
     let asset_id = props.asset_id.clone();
     let onclick = Callback::from(move |_| {
@@ -26,7 +44,7 @@ fn send_button(props: &SendButtonProp) -> Html {
     });
     html! {
         <div {onclick}>
-            <MatButton label="Send" icon={AttrValue::from("arrow_outward")} raised=true />
+            <MatButton label={props.label.clone()} icon={AttrValue::from("arrow_outward")} raised=true />
         </div>
     }
 }
@@ -123,10 +141,10 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                 <div class="container">
                     <div class="row justify-content-evenly">
                         <div class="col-4">
-                            <MatButton label="Receive" icon={AttrValue::from("call_received")} raised=true/>
+                            <ReceiveButton label="Receive" asset_id={"_" /*prop.asset_id.clone()*/ }/>
                         </div>
                         <div class="col-4">
-                            <SendButton asset_id={prop.asset_id.clone()}/>
+                            <SendButton label="Send" asset_id={prop.asset_id.clone()}/>
                         </div>
                     </div>
                 </div>
@@ -136,6 +154,7 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
             </div>
         </div>
         {onload}
+        <RefreshButton/>
         </>
     }
 }

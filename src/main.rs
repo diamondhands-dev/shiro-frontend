@@ -3,6 +3,7 @@ use yew::prelude::*;
 use yew_router::prelude::*;
 
 use self::components::asset_balance_page::Page as AssetBalancePage;
+use self::components::asset_receive_page::Page as AssetReceivePage;
 use self::components::asset_send_page::Page as AssetSendPage;
 use self::components::balance_page::Page as BalancePage;
 use self::components::bitcoin_page::Page as BitcoinPage;
@@ -15,15 +16,17 @@ mod components;
 #[derive(Clone, Routable, PartialEq)]
 enum Route {
     #[at("/")]
-    BalancePageRoute,
+    MnemonicPageRoute,
     #[at("/bitcoin")]
     BitcoinPageRoute,
     #[at("/issue")]
     IssueAssetPageRoute,
-    #[at("/mnemonic")]
-    MnemonicPageRoute,
     #[at("/utxos")]
     UtxosPageRoute,
+    #[at("/balance")]
+    BalancePageRoute,
+    #[at("/balance/receive/:asset_id")]
+    AssetReceivePageRoute { asset_id: String },
     #[at("/balance/send/:asset_id")]
     AssetSendPageRoute { asset_id: String },
     #[at("/balance/:asset_id")]
@@ -46,12 +49,27 @@ fn asset_balance_page(prop: &AssetBalancePageRouteProp) -> Html {
 }
 
 #[derive(Properties, PartialEq)]
+pub struct AssetReceivePageRouteProp {
+    asset_id: String,
+}
+
+#[function_component(AssetReceivePageRoute)]
+fn asset_receive_page(prop: &AssetReceivePageRouteProp) -> Html {
+    html! {
+        <>
+            {inject_navbar()}
+            <AssetReceivePage asset_id={prop.asset_id.clone()}/>
+        </>
+    }
+}
+
+#[derive(Properties, PartialEq)]
 pub struct AssetSendPageRouteProp {
     asset_id: String,
 }
 
 #[function_component(AssetSendPageRoute)]
-fn asset_send_page(prop: &AssetBalancePageRouteProp) -> Html {
+fn asset_send_page(prop: &AssetSendPageRouteProp) -> Html {
     html! {
         <>
             {inject_navbar()}
@@ -119,6 +137,9 @@ fn switch(routes: &Route) -> Html {
         Route::UtxosPageRoute => html!( <UtxosPageRoute/> ),
         Route::AssetBalancePageRoute { asset_id } => {
             html!( <AssetBalancePageRoute asset_id={asset_id.clone()} /> )
+        }
+        Route::AssetReceivePageRoute { asset_id } => {
+            html!( <AssetReceivePageRoute asset_id={asset_id.clone()} /> )
         }
         Route::AssetSendPageRoute { asset_id } => {
             html!( <AssetSendPageRoute asset_id={asset_id.clone()} /> )

@@ -1,3 +1,5 @@
+use super::common::RefreshButton;
+use crate::components::asset_balance_page::ReceiveButton;
 use crate::Route;
 use ::material_yew::{MatTab, MatTabBar};
 use serde::Deserialize;
@@ -20,20 +22,20 @@ pub struct AssetsParams {
     pub filter_asset_types: Vec<AssetType>,
 }
 
-#[derive(Deserialize, Serialize, Clone)]
+#[derive(Deserialize, Serialize, Clone, PartialEq)]
 pub struct Balance {
     pub settled: String,
     pub future: String,
     pub spendable: String,
 }
 
-#[derive(Deserialize, Serialize, Clone)]
+#[derive(Deserialize, Serialize, Clone, PartialEq)]
 pub struct Media {
     file_path: String,
     mime: String,
 }
 
-#[derive(Deserialize, Serialize, Clone)]
+#[derive(Deserialize, Serialize, Clone, PartialEq)]
 pub struct AssetRgb20 {
     pub asset_id: String,
     pub ticker: String,
@@ -42,7 +44,7 @@ pub struct AssetRgb20 {
     pub balance: Balance,
 }
 
-#[derive(Deserialize, Serialize, Clone)]
+#[derive(Deserialize, Serialize, Clone, PartialEq)]
 pub struct AssetRgb121 {
     pub asset_id: String,
     pub name: String,
@@ -53,7 +55,7 @@ pub struct AssetRgb121 {
     pub parent_id: Option<String>,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, PartialEq)]
 pub struct Assets {
     pub rgb20: Vec<AssetRgb20>,
     pub rgb121: Vec<AssetRgb121>,
@@ -75,8 +77,8 @@ pub struct BalancePageProps {}
 #[function_component(BalancePageInner)]
 pub fn page(_props: &BalancePageProps) -> Html {
     let tab = use_state(|| Tabs::Fungible);
-    let fungible_list = use_state(|| Vec::<AssetRgb20>::new());
-    let nft_list = use_state(|| Vec::<AssetRgb121>::new());
+    let fungible_list = use_state_eq(|| Vec::<AssetRgb20>::new());
+    let nft_list = use_state_eq(|| Vec::<AssetRgb121>::new());
 
     let on_activated = {
         let tab = tab.clone();
@@ -94,6 +96,7 @@ pub fn page(_props: &BalancePageProps) -> Html {
         spawn_local(async move {
             let res = client
                 .put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/assets")
+                //.put("http://localhost:8080/wallet/assets")
                 .json(&AssetsParams {
                     filter_asset_types: Vec::<AssetType>::new(),
                 })
@@ -104,6 +107,7 @@ pub fn page(_props: &BalancePageProps) -> Html {
                     Ok(json) => {
                         f_list.set(json.assets.rgb20);
                         //mock start
+                        /*
                         f_list.set(vec![AssetRgb20 {
                             asset_id: "hoge".to_string(),
                             ticker: "FAKEMONA".to_string(),
@@ -115,6 +119,7 @@ pub fn page(_props: &BalancePageProps) -> Html {
                                 spendable: "1".to_string(),
                             },
                         }]);
+                         */
                         //mock end
                         n_list.set(json.assets.rgb121);
                         log::info!("Got assets");
@@ -170,11 +175,13 @@ pub fn page(_props: &BalancePageProps) -> Html {
 
     html! {
         <>
-             <MatTabBar onactivated={on_activated}>
-                 <MatTab icon="wallet" label="Fungible" />
-                 <MatTab icon="image" label="NFT" />
-             </MatTabBar>
-             {content}
+            <MatTabBar onactivated={on_activated}>
+                <MatTab icon="wallet" label="Fungible" />
+                <MatTab icon="image" label="NFT" />
+            </MatTabBar>
+            {content}
+            <ReceiveButton label={"RECEIVE ASSETS"} asset_id={"_"}/>
+            <RefreshButton/>
         </>
     }
 }
