@@ -158,7 +158,7 @@ fn inject_navbar() -> Html {
                         <div class="collapse navbar-collapse" id="n_bar">
                             <ul class="navbar-nav active">
                                  <li><Link<Route> classes={classes!("nav-link")} to={Route::MnemonicPageRoute}>{"Mnemonic"}</Link<Route>></li>
-                                 <li><Link<Route> classes={classes!("nav-link")} to={Route::BalancePageRoute}>{"Balance"}</Link<Route>></li>
+                                 <li><Link<Route> classes={classes!("nav-link")} to={Route::BalancePageRoute}>{"Asset"}</Link<Route>></li>
                                  <li><Link<Route> classes={classes!("nav-link")} to={Route::BitcoinPageRoute}>{"Bitcoin"}</Link<Route>></li>
                                  <li><Link<Route> classes={classes!("nav-link")} to={Route::IssueAssetPageRoute}>{"Issue"}</Link<Route>></li>
                                  <li><Link<Route> classes={classes!("nav-link")} to={Route::UtxosPageRoute}>{"UTXOs"}</Link<Route>></li>

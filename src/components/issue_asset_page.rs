@@ -1,4 +1,4 @@
-use material_yew::{MatButton, MatTextField};
+use material_yew::{MatButton, MatTextField, MatCircularProgress};
 use yew::prelude::*;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
@@ -40,13 +40,14 @@ pub struct IssueAssetPageProps {}
 
 #[function_component(IssueAssetPageInner)]
 pub fn page(props: &IssueAssetPageProps) -> Html {
-    
+    let message = use_state(|| "".to_string());
+    let new_issue = use_state(|| false);
     let ticker = use_state(|| "".to_string());
     let name = use_state(|| "".to_string());
     let amount = use_state(|| "".to_string());
 
     let presision = 0;
-    let amounts = vec![amount.to_string()];
+    let amounts = vec![amount.to_string(), amount.to_string(), amount.to_string()];
 
     let oninput_ticker = {
         let oninput_ticker = ticker.clone();
@@ -68,11 +69,17 @@ pub fn page(props: &IssueAssetPageProps) -> Html {
     };
 
     let onclick_issue_assets_button = {
-        let ticker_ = ticker.clone();
-        let name_ = name.clone();
+        let new_issue = new_issue.clone();
+        let message = message.clone();
+
+        let ticker = ticker.clone();
+        let name = name.clone();
         Callback::from(move |_| {
-            let ticker = ticker_.clone();
-            let name = name_.clone();
+            let new_issue = new_issue.clone();
+            let message = message.clone();
+
+            let ticker = ticker.clone();
+            let name = name.clone();
             let presision = presision;
             let amounts = amounts.clone().iter().map(|s| s.to_string()).collect();
             
@@ -84,17 +91,37 @@ pub fn page(props: &IssueAssetPageProps) -> Html {
             };
             let client = reqwest::Client::new();
             spawn_local(async move {
+                new_issue.set(true);
                 let res = client
                     //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/issue/rgb20")
-                    .put("http://127.0.0.1:8080/wallet/issue/rgb20")
+                    .put("http://localhost:8080/wallet/issue/rgb20")
                     .json(&asset)
                     .send()
                     .await;
-                log::info!("{:#?}", res);
+                log::info!("0 {:#?}", res);
+                new_issue.set(false);
+                match res {
+                    Ok(res) => {
+                        match res.json().await {
+                            Ok(json) => {
+                                log::info!("1 {:#?}", json);
+                                message.set(json);
+                            },
+                            Err(e) => {
+                                log::info!("2 {:?}", e);
+                                message.set(e.to_string());
+                            }
+                        }
+                    },
+                    Err(e) => {
+                        log::info!("3 {:?}", e);
+                        message.set(e.to_string());
+                    }
+                }
             });
+
         })
     };
-
 
     html! {
         <div class="container">
@@ -108,10 +135,16 @@ pub fn page(props: &IssueAssetPageProps) -> Html {
 
             <div class="row">
                 <div class="col-12">
-                  <IssueAssetsButton onclick={onclick_issue_assets_button}/>
+                if *new_issue {
+                    <MatCircularProgress indeterminate=true />
+                } else {
+                    <IssueAssetsButton onclick={onclick_issue_assets_button}/>
+                }
                 </div>
             </div>
 
+
+            <p class="message">{(*message).to_string()}</p>
         </div>
 
     }
