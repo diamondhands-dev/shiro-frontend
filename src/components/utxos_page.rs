@@ -108,7 +108,7 @@ pub fn utxo_list(_props: &UtxosListProps) -> Html {
         let u_list = utxo_list.clone();
         spawn_local(async move {
             let res = client
-                .post(API_ROOT.to_owned() + "/wallet/unspents")
+                .put(API_ROOT.to_owned() + "/wallet/unspents")
                 .json(&unspents)
                 .send()
                 .await;
