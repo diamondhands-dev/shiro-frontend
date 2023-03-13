@@ -5,6 +5,8 @@ use std::collections::HashMap;
 use wasm_bindgen_futures::spawn_local;
 use yew::{function_component, html, prelude::*, use_state, Html, Properties};
 
+const API_ROOT: &'static str = env!("API_ROOT");
+
 #[derive(Serialize, Deserialize)]
 pub struct SendParams {
     recipient_map: HashMap<String, Vec<Recipient>>,
@@ -57,7 +59,7 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
                 spawn_local(async move {
                     let res = client
                         //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/assets")
-                        .put("http://localhost:8080/wallet/assets")
+                        .put(API_ROOT.to_owned() + "/wallet/assets")
                         .json(&AssetsParams {
                             filter_asset_types: Vec::<AssetType>::new(),
                         })
@@ -157,7 +159,7 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
                 };
                 let res = client
                     //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/send")
-                    .put("http://localhost:8080/wallet/send")
+                    .put(API_ROOT.to_owned() + "/wallet/send")
                     .json(&send_params)
                     .send()
                     .await;

@@ -3,6 +3,8 @@ use yew::prelude::*;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 
+const API_ROOT: &'static str = env!("API_ROOT");
+
 #[derive(Serialize, Deserialize)]
 pub struct IssueParams {
     ticker: String,
@@ -94,7 +96,7 @@ pub fn page(props: &IssueAssetPageProps) -> Html {
                 new_issue.set(true);
                 let res = client
                     //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/issue/rgb20")
-                    .put("http://localhost:8080/wallet/issue/rgb20")
+                    .put(API_ROOT.to_owned() + "/wallet/issue/rgb20")
                     .json(&asset)
                     .send()
                     .await;
@@ -102,7 +104,7 @@ pub fn page(props: &IssueAssetPageProps) -> Html {
                 new_issue.set(false);
                 match res {
                     Ok(res) => {
-                        match res.json().await {
+                        match res.text().await {
                             Ok(json) => {
                                 log::info!("1 {:#?}", json);
                                 message.set(json);

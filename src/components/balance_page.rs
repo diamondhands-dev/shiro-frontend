@@ -8,6 +8,8 @@ use wasm_bindgen_futures::spawn_local;
 use yew::{function_component, html, prelude::*, use_state, Html, Properties, Component, Context};
 use yew_router::prelude::Link;
 
+const API_ROOT: &'static str = env!("API_ROOT");
+
 /// The type of an asset
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
 pub enum AssetType {
@@ -96,7 +98,7 @@ pub fn page(_props: &BalancePageProps) -> Html {
         spawn_local(async move {
             let res = client
                 //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/assets")
-                .put("http://localhost:8080/wallet/assets")
+                .put(API_ROOT.to_owned() + "/wallet/assets")
                 .json(&AssetsParams {
                     filter_asset_types: Vec::<AssetType>::new(),
                 })

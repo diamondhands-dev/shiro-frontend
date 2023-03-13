@@ -7,6 +7,8 @@ use yew::{
 };
 use yew_router::prelude::*;
 
+const API_ROOT: &'static str = env!("API_ROOT");
+
 enum PageMode {
     RGB20,
     RGB121,
@@ -72,7 +74,7 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                 spawn_local(async move {
                     let res = client
                         //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/assets")
-                        .put("http://localhost:8080/wallet/assets")
+                        .put(API_ROOT.to_owned() + "/wallet/assets")
                         .json(&AssetsParams {
                             filter_asset_types: Vec::<AssetType>::new(),
                         })

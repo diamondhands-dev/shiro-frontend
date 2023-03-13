@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 use yew::{function_component, html, prelude::*, use_state, Html, Properties};
 
+const API_ROOT: &'static str = env!("API_ROOT");
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct BlindParams {
     asset_id: Option<String>,
@@ -71,7 +73,7 @@ pub fn asset_receive_page(props: &AssetReceivePageInnerProp) -> Html {
             let client = reqwest::Client::new();
             let res = client
                 //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/blind")
-                .put("http://localhost:8080/wallet/blind")
+                .put(API_ROOT.to_owned() + "/wallet/blind")
                 .json(&blind_params)
                 .send()
                 .await;
