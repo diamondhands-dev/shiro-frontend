@@ -56,7 +56,7 @@ pub struct AssetBalancePageInnerProp {
 
 #[function_component(AssetBalancePageInner)]
 pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
-    let asset_id = use_state(|| "unknown".to_string());
+    let asset_id = prop.asset_id.clone();
     let page_mode = use_state(|| PageMode::UNKNOWN);
     let name = use_state(|| "Unknown".to_string());
     let ticker = use_state(|| "UNKNOWN".to_string());
@@ -71,7 +71,8 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                 let total_balance = total_balance.clone();
                 spawn_local(async move {
                     let res = client
-                        .put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/assets")
+                        //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/assets")
+                        .put("http://localhost:8080/wallet/assets")
                         .json(&AssetsParams {
                             filter_asset_types: Vec::<AssetType>::new(),
                         })
@@ -90,7 +91,7 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                                     if rgb20s.len() == 1 {
                                         let rgb20 = rgb20s[0].clone();
                                         page_mode.set(PageMode::RGB20);
-                                        asset_id.set(rgb20.asset_id.clone());
+                                        //asset_id.set(rgb20.asset_id.clone());
                                         name.set(rgb20.name.clone());
                                         ticker.set(rgb20.ticker.clone());
                                         total_balance.set(rgb20.balance.spendable.parse().unwrap());
@@ -107,7 +108,7 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                                     if rgb121s.len() == 1 {
                                         let rgb121 = rgb121s[0].clone();
                                         page_mode.set(PageMode::RGB121);
-                                        asset_id.set(rgb121.asset_id.clone());
+                                        //asset_id.set(rgb121.asset_id.clone());
                                         name.set(rgb121.name.clone());
                                         total_balance
                                             .set(rgb121.balance.spendable.parse().unwrap());
@@ -141,7 +142,7 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                 <div class="container">
                     <div class="row justify-content-evenly">
                         <div class="col-4">
-                            <ReceiveButton label="Receive" asset_id={"_" /*prop.asset_id.clone()*/ }/>
+                            <ReceiveButton label="Receive" asset_id={prop.asset_id.clone()}/>
                         </div>
                         <div class="col-4">
                             <SendButton label="Send" asset_id={prop.asset_id.clone()}/>
