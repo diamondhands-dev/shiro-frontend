@@ -5,7 +5,7 @@ use ::material_yew::{MatTab, MatTabBar};
 use serde::Deserialize;
 use serde::Serialize;
 use wasm_bindgen_futures::spawn_local;
-use yew::{function_component, html, prelude::*, use_state, Html, Properties};
+use yew::{function_component, html, prelude::*, use_state, Html, Properties, Component, Context};
 use yew_router::prelude::Link;
 
 /// The type of an asset
@@ -95,8 +95,8 @@ pub fn page(_props: &BalancePageProps) -> Html {
         let n_list = nft_list.clone();
         spawn_local(async move {
             let res = client
-                .put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/assets")
-                //.put("http://localhost:8080/wallet/assets")
+                //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/assets")
+                .put("http://localhost:8080/wallet/assets")
                 .json(&AssetsParams {
                     filter_asset_types: Vec::<AssetType>::new(),
                 })
@@ -106,21 +106,6 @@ pub fn page(_props: &BalancePageProps) -> Html {
                 Ok(res) => match res.json::<AssetsResult>().await {
                     Ok(json) => {
                         f_list.set(json.assets.rgb20);
-                        //mock start
-                        /*
-                        f_list.set(vec![AssetRgb20 {
-                            asset_id: "hoge".to_string(),
-                            ticker: "FAKEMONA".to_string(),
-                            name: "Fake Monacoin".to_string(),
-                            precision: 8,
-                            balance: Balance {
-                                settled: "0".to_string(),
-                                future: "0".to_string(),
-                                spendable: "1".to_string(),
-                            },
-                        }]);
-                         */
-                        //mock end
                         n_list.set(json.assets.rgb121);
                         log::info!("Got assets");
                     }
@@ -140,6 +125,7 @@ pub fn page(_props: &BalancePageProps) -> Html {
                     (*fungible_list).iter().enumerate().map(|(_,asset)| {
                         let spendable = asset.balance.spendable.clone().parse::<f64>().unwrap();
                         html! {
+                            // Passing data `asset_id`
                             <Link<Route> to={Route::AssetBalancePageRoute {asset_id: asset.asset_id.clone()}}>
                             <div class="container">
                             <div> {asset.asset_id.clone()} </div>

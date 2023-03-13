@@ -20,7 +20,8 @@ pub fn refresh_button() -> Html {
     let onclick = Callback::from(move |_: MouseEvent| {
         spawn_local(async {
             match reqwest::Client::new()
-                .put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/refresh")
+                //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/refresh")
+                .put("http://localhost:8080/wallet/refresh")
                 .json(&RefreshParams {
                     asset_id: None,
                     filter: Vec::<RefreshFilter>::new(),
