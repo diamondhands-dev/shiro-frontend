@@ -151,7 +151,7 @@ fn inject_navbar() -> Html {
     html! {
                 <nav class="navbar navbar-expand-lg">
                     <div class="container">
-                        <a class="navbar-brand" href="javascript:void(0)">{"Shiro-wallet"}</a>
+                        <a class="navbar-brand" href="/balance">{"Shiro-wallet"}</a>
                         <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#n_bar" aria-controls="navbarNavAltMarkup" aria-label="Toggle navigation">
                             <MatIcon>{"menu"}</MatIcon>
                         </button>

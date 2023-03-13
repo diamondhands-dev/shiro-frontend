@@ -126,12 +126,12 @@ pub struct OpenWalletButtonProps {
 #[function_component(OpenWalletButton)]
 pub fn open_wallet_button(props: &OpenWalletButtonProps) -> Html {
     let onclick = {
-        let navigator = use_history().unwrap();
+        //let navigator = use_history().unwrap();
         let onclick = props.onclick.clone();
         Callback::from(move |e: MouseEvent| {
             e.default_prevented();
             onclick.emit(e);
-            navigator.push(crate::Route::BalancePageRoute);
+            //navigator.push(crate::Route::BalancePageRoute);
         })
     };
 
@@ -242,16 +242,15 @@ pub fn page(_: &PageProps) -> Html {
                         let client = reqwest::Client::new();
                         spawn_local(async move {
                             let res = client
-                                .put("http://shiro.westus2.cloudapp.azure.com:4320/wallet")
-                                //.put("http://localhost:8080/wallet")
+                                //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet")
+                                .put("http://localhost:8080/wallet")
                                 .json(&wallet)
                                 .send()
                                 .await;
                             log::info!("{:#?}", res);
                             let res = client
-                                .put(
-                                    "http://shiro.westus2.cloudapp.azure.com:4320/wallet/go_online",
-                                )
+                                //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/go_online")
+                                .put("http://localhost:8080/wallet/go_online")
                                 .json(&go_online)
                                 .send()
                                 .await;
