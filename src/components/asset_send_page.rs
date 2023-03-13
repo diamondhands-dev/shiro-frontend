@@ -159,7 +159,7 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
                 };
                 let res = client
                     //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/send")
-                    .put(API_ROOT.to_owned() + "/wallet/send")
+                    .post(API_ROOT.to_owned() + "/wallet/send")
                     .json(&send_params)
                     .send()
                     .await;
