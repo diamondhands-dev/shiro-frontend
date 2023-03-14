@@ -6,8 +6,34 @@ use yew::{
     function_component, html, prelude::*, use_state, virtual_dom::AttrValue, Html, Properties,
 };
 use yew_router::prelude::*;
+use serde::{Deserialize, Serialize};
+use super::utxos_page::{Outpoint};
 
 const API_ROOT: Option<&'static str> = option_env!("API_ROOT");
+
+
+#[derive(Deserialize, Serialize, Clone, PartialEq)]
+pub struct Transfer {
+    idx: String,
+    created_at: String,
+    updated_at: String,
+    status: String,
+    amount: String,
+    kind: String,
+    txid: Option<String>,
+    blinded_utxo: Option<String>,
+    unblinded_utxo: Option<Outpoint>,
+    change_utxo: Option<Outpoint>,
+    blinding_secret: Option<String>,
+    expiration: Option<String>,
+}
+
+
+
+#[derive(Deserialize, Serialize)]
+pub struct TransfersParams {
+    pub asset_id: String,
+}
 
 enum PageMode {
     RGB20,
@@ -64,9 +90,12 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
     let ticker = use_state(|| "UNKNOWN".to_string());
     let total_balance = use_state(|| 0.0f64);
 
+    let transfer_list = use_state_eq(|| Vec::<Transfer>::new());
+
     let content = {
         match *page_mode {
             PageMode::UNKNOWN => {
+                let t_list = transfer_list.clone();
                 let client = reqwest::Client::new();
                 let name = name.clone();
                 let ticker = ticker.clone();
@@ -97,7 +126,7 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                                         name.set(rgb20.name.clone());
                                         ticker.set(rgb20.ticker.clone());
                                         total_balance.set(rgb20.balance.spendable.parse().unwrap());
-                                        return;
+                                        //return;
                                     }
                                 }
                                 {
@@ -123,23 +152,78 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                         },
                         _ => {}
                     };
+
+                    let params = TransfersParams {
+                        asset_id: asset_id.clone()
+                    };
+                    let res = client
+                    .put(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/transfers")
+                    .json(&params)
+                    .send()
+                    .await;
+                    log::info!("{:#?}", res);
+                    match res {
+                        Ok(res) => match res.json::<Vec::<Transfer>>().await {
+                            Ok(json) => {
+                                t_list.set(json);
+                            }
+                            Err(e) => {
+                                log::error!("{:?}", e);
+                            }
+                        },
+                        Err(e) => {
+                            log::error!("{:?}", e);
+                        }
+                    }
                 });
             }
             _ => {}
         }
-        html! { <></> }
+        //let now = std::time::Instant::now();
+        //log::info!("{:#?}", now);
+        html! {
+            <>
+            {"Transactions"}
+            //<div class="list-group">
+            {
+                (*transfer_list).iter().enumerate().map(|(_,transfer)| {
+                    //let spendable = asset.balance.spendable.clone().parse::<f64>().unwrap();
+                    html! {
+                        if !(transfer.status == "WaitingCounterparty" && transfer.expiration.clone()
+                            .unwrap_or("1".to_string())
+                            .parse::<u128>()
+                            .unwrap() < 1678775312) {
+                            <div class="list-group-item list-group-item-action flex-column align-items-start">
+                                <div class="d-flex w-100 justify-content-between">
+
+                                    if transfer.kind == "receive" {
+                                        <h5 class="mb-1">{"+"}{transfer.amount.clone()}</h5>
+                                    } else if transfer.kind == "send" {
+                                        <h5 class="mb-1">{"-"}{transfer.amount.clone()}</h5>
+                                    } else if transfer.kind == "issuance" {
+                                        <h5 class="mb-1">{"+"}{transfer.amount.clone()}</h5>
+                                    }
+                                    //<small>{spendable / 10f64.powi(asset.precision as i32)}</small>
+                                </div>
+                                <p class="mb-1 truncate">{transfer.status.clone()}</p>
+                            </div>
+                        }
+                    }}).collect::<Html>()
+            }
+            </>
+         }
     };
 
     html! {
         <>
         <div class="container">
-            <h1 style="text-align: center">{(*name).clone()}</h1>
-            <div style="text-align: center">{"Total Balance"}</div>
-            <h2 style="text-align: center">{*total_balance.clone()} {" "} {(*ticker).clone()}</h2>
+            <h1>{(*name).clone()}</h1>
+            <div>{"Total Balance"}</div>
+            <h2>{*total_balance.clone()} {" "} {(*ticker).clone()}</h2>
             <div class="row justify-content-evenly">
-                <div class="container border">
-                    <div class="col-12">{"Asset ID"}</div>
-                    <div class="col-12">{prop.asset_id.clone()}</div>
+                <div class="container border asset_id">
+                    <div>{"Asset ID"}</div>
+                    <div>{prop.asset_id.clone()}</div>
                 </div>
                 <div class="container">
                     <div class="row justify-content-evenly">
