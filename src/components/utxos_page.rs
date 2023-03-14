@@ -4,7 +4,7 @@ use yew::{function_component, html, prelude::*, Html, Properties};
 use material_yew::{MatButton, MatTextField, MatCircularProgress};
 use yew::virtual_dom::AttrValue;
 
-const API_ROOT: &'static str = env!("API_ROOT");
+const API_ROOT: Option<&'static str> = option_env!("API_ROOT");
 
 #[derive(Deserialize, Serialize, Clone, PartialEq)]
 pub struct Outpoint {
@@ -74,7 +74,7 @@ pub fn utxo_list(_props: &UtxosListProps) -> Html {
             spawn_local(async move {
                 new_utxo.set(true);
                 let res = client
-                    .put(API_ROOT.to_owned() + "/wallet/utxos")
+                    .put(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/utxos")
                     .json(&utxos)
                     .send()
                     .await;
@@ -108,7 +108,7 @@ pub fn utxo_list(_props: &UtxosListProps) -> Html {
         let u_list = utxo_list.clone();
         spawn_local(async move {
             let res = client
-                .put(API_ROOT.to_owned() + "/wallet/unspents")
+                .put(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/unspents")
                 .json(&unspents)
                 .send()
                 .await;

@@ -9,7 +9,7 @@ use yew::{function_component, html, prelude::*, use_state, Html, Properties};
 use yew_router::prelude::*;
 
 const KEY: &'static str = "shiro.mnemonic";
-const API_ROOT: &'static str = env!("API_ROOT");
+const API_ROOT: Option<&'static str> = option_env!("API_ROOT");
 
 #[derive(Properties, PartialEq)]
 pub struct MnemonicWordProp {
@@ -244,14 +244,14 @@ pub fn page(_: &PageProps) -> Html {
                         spawn_local(async move {
                             let res = client
                                 //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet")
-                                .put(API_ROOT.to_owned() + "/wallet")
+                                .put(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet")
                                 .json(&wallet)
                                 .send()
                                 .await;
                             log::info!("{:#?}", res);
                             let res = client
                                 //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/go_online")
-                                .put(API_ROOT.to_owned() + "/wallet/go_online")
+                                .put(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/go_online")
                                 .json(&go_online)
                                 .send()
                                 .await;

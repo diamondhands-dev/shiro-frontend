@@ -7,7 +7,7 @@ use yew::virtual_dom::AttrValue;
 use wasm_bindgen_futures::spawn_local;
 use material_yew::{MatTextField};
 
-const API_ROOT: &'static str = env!("API_ROOT");
+const API_ROOT: Option<&'static str> = option_env!("API_ROOT");
 
 #[derive(Serialize, Deserialize)]
 pub struct AddressData {
@@ -55,7 +55,7 @@ pub fn btc_balance_panel(_props: &BtcBalancePanelProps) -> Html {
             let new_address = new_address.clone();
             spawn_local(async move {
                 let res = client
-                    .get(API_ROOT.to_owned() + "/wallet/address")
+                    .get(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/address")
                     .send()
                     .await;
                 match res {

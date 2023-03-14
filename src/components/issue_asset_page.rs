@@ -3,7 +3,7 @@ use yew::prelude::*;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 
-const API_ROOT: &'static str = env!("API_ROOT");
+const API_ROOT: Option<&'static str> = option_env!("API_ROOT");
 
 #[derive(Serialize, Deserialize)]
 pub struct IssueParams {
@@ -96,7 +96,7 @@ pub fn page(props: &IssueAssetPageProps) -> Html {
                 new_issue.set(true);
                 let res = client
                     //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/issue/rgb20")
-                    .put(API_ROOT.to_owned() + "/wallet/issue/rgb20")
+                    .put(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/issue/rgb20")
                     .json(&asset)
                     .send()
                     .await;
