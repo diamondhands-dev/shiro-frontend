@@ -51,11 +51,13 @@ pub struct AssetReceivePageInnerProp {
 #[function_component(AssetReceivePageInner)]
 pub fn asset_receive_page(props: &AssetReceivePageInnerProp) -> Html {
     let invoice = use_state(|| "".to_string());
+    let blinded_utxo = use_state(|| "".to_string());
     // FIXME: Multiple HTTP requests are called due to the state change by use_state.
     let count = use_mut_ref(|| 0);
 
     let onload = {
         let invoice = invoice.clone();
+        let blinded_utxo = blinded_utxo.clone();
         let asset_id = if props.asset_id.starts_with('_') {
             None
         } else {
@@ -84,6 +86,7 @@ pub fn asset_receive_page(props: &AssetReceivePageInnerProp) -> Html {
                         *count.borrow_mut() += 1;
                         if *count.borrow_mut() < 2 {
                             invoice.set(json.invoice);
+                            blinded_utxo.set(json.blinded_utxo);
                         } else {
 
                         }
@@ -110,8 +113,8 @@ pub fn asset_receive_page(props: &AssetReceivePageInnerProp) -> Html {
         </div>
         <div class="container">
             <h3>{"Invoice"}</h3>
-            <MatTextField outlined=true label="blinded UTXO" value={(*invoice).clone()}/>
-            <div>{"The blinded UTXO in this invoice will expire in 24 hours after its creation and will be valid only for this asset"}</div>
+            <MatTextField outlined=true label="blinded UTXO" value={(*blinded_utxo).clone()}/>
+            <div>{"The blinded UTXO in this invoice will expire in 1 hours after its creation and will be valid only for this asset"}</div>
         </div>
         /*
         <div class="container">
