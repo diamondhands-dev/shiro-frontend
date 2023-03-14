@@ -162,6 +162,16 @@ pub fn utxo_list(_props: &UtxosListProps) -> Html {
     }
 }
 
+#[derive(Properties, PartialEq)]
+pub struct UtxosListProps {}
+
+#[function_component(UtxosList)]
+pub fn utxo_list(_props: &UtxosListProps) -> Html {
+    html! {
+        <></>
+    }
+}
+
 pub struct Page {}
 
 pub enum Msg {}
