@@ -8,7 +8,7 @@ use wasm_bindgen_futures::spawn_local;
 use yew::{function_component, html, prelude::*, use_state, Html, Properties, Component, Context};
 use yew_router::prelude::Link;
 
-const API_ROOT: &'static str = env!("API_ROOT");
+const API_ROOT: Option<&'static str> = option_env!("API_ROOT");
 
 /// The type of an asset
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
@@ -98,7 +98,7 @@ pub fn page(_props: &BalancePageProps) -> Html {
         spawn_local(async move {
             let res = client
                 //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/assets")
-                .put(API_ROOT.to_owned() + "/wallet/assets")
+                .put(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/assets")
                 .json(&AssetsParams {
                     filter_asset_types: Vec::<AssetType>::new(),
                 })
@@ -123,20 +123,23 @@ pub fn page(_props: &BalancePageProps) -> Html {
         match *tab {
             Tabs::Fungible => html! {
                 <>
+                <div class="list-group">
                 {
                     (*fungible_list).iter().enumerate().map(|(_,asset)| {
                         let spendable = asset.balance.spendable.clone().parse::<f64>().unwrap();
                         html! {
-                            // Passing data `asset_id`
+                            <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
                             <Link<Route> to={Route::AssetBalancePageRoute {asset_id: asset.asset_id.clone()}}>
-                            <div class="container">
-                            <div> {asset.asset_id.clone()} </div>
-                            <div> {asset.ticker.clone()} {"("} {asset.name.clone()} {")"}</div>
-                            <div> {spendable / 10f64.powi(asset.precision as i32)} </div>
+                            <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{asset.name.clone()}</h5>
+                            <small>{spendable / 10f64.powi(asset.precision as i32)}</small>
                             </div>
+                            <p class="mb-1 truncate">{asset.asset_id.clone()}</p>
                             </Link<Route>>
+                            </a>
                         }}).collect::<Html>()
                 }
+                </div>
                 </>
             },
             Tabs::NFT => html! {
@@ -145,8 +148,9 @@ pub fn page(_props: &BalancePageProps) -> Html {
                     (*nft_list).iter().enumerate().map(|(_,asset)| {
                         let spendable = asset.balance.spendable.clone().parse::<f64>().unwrap();
                         html! {
+                            // FIXME
                             <div class="container">
-                                <div>{asset.asset_id.clone()}</div>
+                                //<div>{asset.asset_id.clone()}</div>
                                 <div>{asset.name.clone()}</div>
                                 <div>{spendable / 10f64.powi(asset.precision as i32)}</div>
                                 <div> {match asset.description.clone() {

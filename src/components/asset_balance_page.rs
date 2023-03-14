@@ -7,7 +7,7 @@ use yew::{
 };
 use yew_router::prelude::*;
 
-const API_ROOT: &'static str = env!("API_ROOT");
+const API_ROOT: Option<&'static str> = option_env!("API_ROOT");
 
 enum PageMode {
     RGB20,
@@ -64,7 +64,7 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
     let ticker = use_state(|| "UNKNOWN".to_string());
     let total_balance = use_state(|| 0.0f64);
 
-    let onload = {
+    let content = {
         match *page_mode {
             PageMode::UNKNOWN => {
                 let client = reqwest::Client::new();
@@ -74,7 +74,7 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                 spawn_local(async move {
                     let res = client
                         //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/assets")
-                        .put(API_ROOT.to_owned() + "/wallet/assets")
+                        .put(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/assets")
                         .json(&AssetsParams {
                             filter_asset_types: Vec::<AssetType>::new(),
                         })
@@ -152,11 +152,11 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                     </div>
                 </div>
             </div>
-            <div class="row col-1">
-                <h2 class="col">{"Transactions"}</h2>
-            </div>
+            //<div class="row col-1">
+            //    <h2 class="col">{"Transactions"}</h2>
+            //</div>
         </div>
-        {onload}
+        {content}
         <RefreshButton/>
         </>
     }

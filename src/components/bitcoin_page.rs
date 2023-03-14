@@ -94,9 +94,9 @@ pub fn btc_balance_panel(_props: &BtcBalancePanelProps) -> Html {
                     <MatButton label="Receive" icon={AttrValue::from("code")} raised=true/>
                 </div>
             </div>
-            <div class="row col-1">
-                <h2 class="col">{"Transactions"}</h2>
-            </div>
+            //<div class="row col-1">
+            //    <h2 class="col">{"Transactions"}</h2>
+            //</div>
             <div>
                 if *new_address {
                     <QrCodeView address={(*address).clone()} />
