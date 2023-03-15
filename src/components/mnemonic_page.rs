@@ -6,7 +6,6 @@ use material_yew::{MatButton, MatList, MatListItem, MatTextField};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 use yew::{function_component, html, prelude::*, use_state, Html, Properties};
-use yew_router::prelude::*;
 
 const KEY: &'static str = "shiro.mnemonic";
 const API_ROOT: Option<&'static str> = option_env!("API_ROOT");
@@ -244,14 +243,20 @@ pub fn page(_: &PageProps) -> Html {
                         spawn_local(async move {
                             let res = client
                                 //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet")
-                                .put(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet")
+                                .put(
+                                    API_ROOT.unwrap_or("http://localhost:8080").to_owned()
+                                        + "/wallet",
+                                )
                                 .json(&wallet)
                                 .send()
                                 .await;
                             log::info!("{:#?}", res);
                             let res = client
                                 //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/go_online")
-                                .put(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/go_online")
+                                .put(
+                                    API_ROOT.unwrap_or("http://localhost:8080").to_owned()
+                                        + "/wallet/go_online",
+                                )
                                 .json(&go_online)
                                 .send()
                                 .await;
@@ -267,7 +272,7 @@ pub fn page(_: &PageProps) -> Html {
 
     html! {
         <>
-            <h1>{"Fill your mnemonic word in."}</h1>
+            <p>{"Fill your mnemonic word in."}</p>
             <MatList>
                 <MnemonicWordList words={(*words).clone()} {onchanged}/>
                 <GenerateKeysButton onclick={onclick_generate_keys_button}/>

@@ -1,5 +1,5 @@
 use super::balance_page::{AssetType, AssetsParams, AssetsResult};
-use material_yew::{MatButton, MatTextField, MatCircularProgress};
+use material_yew::{MatButton, MatCircularProgress, MatTextField};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use wasm_bindgen_futures::spawn_local;
@@ -59,7 +59,10 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
                 spawn_local(async move {
                     let res = client
                         //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/assets")
-                        .put(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/assets")
+                        .put(
+                            API_ROOT.unwrap_or("http://localhost:8080").to_owned()
+                                + "/wallet/assets",
+                        )
                         .json(&AssetsParams {
                             filter_asset_types: Vec::<AssetType>::new(),
                         })
@@ -165,16 +168,14 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
                     .await;
                 sending.set(false);
                 match res {
-                    Ok(res) => {
-                        match res.text().await {
-                            Ok(json) => {
-                                log::info!("1 {:#?}", json);
-                                message.set(json);
-                            },
-                            Err(e) => {
-                                log::info!("2 {:?}", e);
-                                message.set(e.to_string());
-                            }
+                    Ok(res) => match res.text().await {
+                        Ok(json) => {
+                            log::info!("1 {:#?}", json);
+                            message.set(json);
+                        }
+                        Err(e) => {
+                            log::info!("2 {:?}", e);
+                            message.set(e.to_string());
                         }
                     },
                     Err(e) => {
@@ -194,7 +195,7 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
 
     let oninput_amount_to_pay = {
         let amount_to_pay = amount_to_pay.clone();
-        let invalid_form = invalid_form.clone();
+        let _invalid_form = invalid_form.clone();
         Callback::from(move |value: String| {
             match value.parse::<f64>() {
                 Ok(v) => amount_to_pay.set(v),

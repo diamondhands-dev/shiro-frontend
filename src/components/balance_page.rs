@@ -5,7 +5,7 @@ use ::material_yew::{MatTab, MatTabBar};
 use serde::Deserialize;
 use serde::Serialize;
 use wasm_bindgen_futures::spawn_local;
-use yew::{function_component, html, prelude::*, use_state, Html, Properties, Component, Context};
+use yew::{function_component, html, prelude::*, use_state, Component, Context, Html, Properties};
 use yew_router::prelude::Link;
 
 const API_ROOT: Option<&'static str> = option_env!("API_ROOT");

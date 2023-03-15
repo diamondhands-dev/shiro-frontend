@@ -1,7 +1,7 @@
-use material_yew::{MatButton, MatTextField, MatCircularProgress};
-use yew::prelude::*;
+use material_yew::{MatButton, MatCircularProgress, MatTextField};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
+use yew::prelude::*;
 
 const API_ROOT: Option<&'static str> = option_env!("API_ROOT");
 
@@ -35,13 +35,12 @@ pub fn issue_assets_button(props: &IssueAssetsButtonProps) -> Html {
     }
 }
 
-
 #[derive(Properties, PartialEq)]
 
 pub struct IssueAssetPageProps {}
 
 #[function_component(IssueAssetPageInner)]
-pub fn page(props: &IssueAssetPageProps) -> Html {
+pub fn page(_props: &IssueAssetPageProps) -> Html {
     let message = use_state(|| "".to_string());
     let new_issue = use_state(|| false);
     let ticker = use_state(|| "".to_string());
@@ -49,7 +48,7 @@ pub fn page(props: &IssueAssetPageProps) -> Html {
     let amount = use_state(|| "".to_string());
 
     let presision = 0;
-    let amounts = vec![amount.to_string(), amount.to_string(), amount.to_string()];
+    let amounts = vec![amount.to_string()];
 
     let oninput_ticker = {
         let oninput_ticker = ticker.clone();
@@ -84,7 +83,7 @@ pub fn page(props: &IssueAssetPageProps) -> Html {
             let name = name.clone();
             let presision = presision;
             let amounts = amounts.clone().iter().map(|s| s.to_string()).collect();
-            
+
             let asset = IssueParams {
                 ticker: ticker.to_string(),
                 name: name.to_string(),
@@ -96,23 +95,24 @@ pub fn page(props: &IssueAssetPageProps) -> Html {
                 new_issue.set(true);
                 let res = client
                     //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/issue/rgb20")
-                    .put(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/issue/rgb20")
+                    .put(
+                        API_ROOT.unwrap_or("http://localhost:8080").to_owned()
+                            + "/wallet/issue/rgb20",
+                    )
                     .json(&asset)
                     .send()
                     .await;
                 log::info!("0 {:#?}", res);
                 new_issue.set(false);
                 match res {
-                    Ok(res) => {
-                        match res.text().await {
-                            Ok(json) => {
-                                log::info!("1 {:#?}", json);
-                                message.set(json);
-                            },
-                            Err(e) => {
-                                log::info!("2 {:?}", e);
-                                message.set(e.to_string());
-                            }
+                    Ok(res) => match res.text().await {
+                        Ok(json) => {
+                            log::info!("1 {:#?}", json);
+                            message.set(json);
+                        }
+                        Err(e) => {
+                            log::info!("2 {:?}", e);
+                            message.set(e.to_string());
                         }
                     },
                     Err(e) => {
@@ -121,7 +121,6 @@ pub fn page(props: &IssueAssetPageProps) -> Html {
                     }
                 }
             });
-
         })
     };
 

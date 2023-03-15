@@ -1,4 +1,4 @@
-use material_yew::{MatButton, MatTextField};
+use material_yew::MatTextField;
 use qrcode::render::svg;
 use qrcode::{EcLevel, QrCode, Version};
 use serde::{Deserialize, Serialize};
@@ -30,8 +30,12 @@ pub struct QrCodeProp {
 
 #[function_component(QrCodeView)]
 pub fn qr_code(props: &QrCodeProp) -> Html {
-    let code =
-        QrCode::with_version((*&props.invoice).as_bytes(), Version::Normal(12), EcLevel::M).unwrap();
+    let code = QrCode::with_version(
+        (*&props.invoice).as_bytes(),
+        Version::Normal(12),
+        EcLevel::M,
+    )
+    .unwrap();
     let image = code
         .render()
         .min_dimensions(300, 300)
@@ -88,7 +92,6 @@ pub fn asset_receive_page(props: &AssetReceivePageInnerProp) -> Html {
                             invoice.set(json.invoice);
                             blinded_utxo.set(json.blinded_utxo);
                         } else {
-
                         }
                     }
                     Err(e) => {

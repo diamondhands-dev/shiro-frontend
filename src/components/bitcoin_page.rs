@@ -1,11 +1,11 @@
 use material_yew::MatButton;
+use material_yew::MatTextField;
 use qrcode::render::svg;
 use qrcode::{EcLevel, QrCode, Version};
-use yew::prelude::*;
 use serde::{Deserialize, Serialize};
-use yew::virtual_dom::AttrValue;
 use wasm_bindgen_futures::spawn_local;
-use material_yew::{MatTextField};
+use yew::prelude::*;
+use yew::virtual_dom::AttrValue;
 
 const API_ROOT: Option<&'static str> = option_env!("API_ROOT");
 
@@ -65,13 +65,13 @@ pub fn btc_balance_panel(_props: &BtcBalancePanelProps) -> Html {
                             Ok(json) => {
                                 address.set(json.new_address);
                                 new_address.set(true);
-                            },
+                            }
                             Err(e) => {
                                 log::error!("{:?}", e);
                                 message.set(e.to_string());
-                            },
+                            }
                         }
-                    },
+                    }
                     Err(e) => {
                         log::error!("{:?}", e);
                     }
@@ -79,7 +79,6 @@ pub fn btc_balance_panel(_props: &BtcBalancePanelProps) -> Html {
             });
         })
     };
-
 
     html! {
         <div class="container">

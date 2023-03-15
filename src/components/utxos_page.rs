@@ -1,7 +1,7 @@
-use wasm_bindgen_futures::spawn_local;
-use serde::{Deserialize, Serialize};
-use yew::{function_component, html, prelude::*, Html, Properties};
 use material_yew::{MatButton, MatCircularProgress};
+use serde::{Deserialize, Serialize};
+use wasm_bindgen_futures::spawn_local;
+use yew::{function_component, html, prelude::*, Html, Properties};
 
 const API_ROOT: Option<&'static str> = option_env!("API_ROOT");
 
@@ -84,13 +84,13 @@ pub fn utxo_list(_props: &UtxosListProps) -> Html {
                         match res.text().await {
                             Ok(text) => {
                                 message.set(text);
-                            },
+                            }
                             Err(e) => {
                                 log::error!("{:?}", e);
                                 message.set(e.to_string());
-                            },
+                            }
                         }
-                    },
+                    }
                     Err(e) => {
                         log::error!("{:?}", e);
                     }
@@ -100,9 +100,7 @@ pub fn utxo_list(_props: &UtxosListProps) -> Html {
     };
 
     let onload = {
-        let unspents = UnspentsParams {
-            settled_only: true,
-        };
+        let unspents = UnspentsParams { settled_only: true };
         let client = reqwest::Client::new();
         let u_list = utxo_list.clone();
         spawn_local(async move {
@@ -115,7 +113,7 @@ pub fn utxo_list(_props: &UtxosListProps) -> Html {
                 Ok(res) => match res.json::<UnspentsResult>().await {
                     Ok(json) => {
                         u_list.set(json.unspents);
-                    },
+                    }
                     Err(e) => {
                         log::error!("{:?}", e);
                     }
@@ -126,18 +124,23 @@ pub fn utxo_list(_props: &UtxosListProps) -> Html {
             }
         });
         //let utxo_list = json.unspents;
-        (*utxo_list).iter().enumerate().map(|(_,utxo_rgb)| {
-            //let spendable = utxo.balance.spendable.clone().parse::<f64>().unwrap();
-            html! {
-                // Passing data `asset_id`
-                //<Link<Route> to={Route::AssetBalancePageRoute {asset_id: asset.asset_id.clone()}}>
-                <div class="container">
-                <div> {utxo_rgb.utxo.outpoint.txid.clone()} </div>
-                //<div> {asset.ticker.clone()} {"("} {asset.name.clone()} {")"}</div>
-                //<div> {spendable / 10f64.powi(asset.precision as i32)} </div>
-                </div>
-                //</Link<Route>>
-            }}).collect::<Html>()
+        (*utxo_list)
+            .iter()
+            .enumerate()
+            .map(|(_, utxo_rgb)| {
+                //let spendable = utxo.balance.spendable.clone().parse::<f64>().unwrap();
+                html! {
+                    // Passing data `asset_id`
+                    //<Link<Route> to={Route::AssetBalancePageRoute {asset_id: asset.asset_id.clone()}}>
+                    <div class="container">
+                    <div> {utxo_rgb.utxo.outpoint.txid.clone()} </div>
+                    //<div> {asset.ticker.clone()} {"("} {asset.name.clone()} {")"}</div>
+                    //<div> {spendable / 10f64.powi(asset.precision as i32)} </div>
+                    </div>
+                    //</Link<Route>>
+                }
+            })
+            .collect::<Html>()
         //html! {}
     };
 
