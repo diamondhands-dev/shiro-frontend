@@ -1,8 +1,7 @@
 use wasm_bindgen_futures::spawn_local;
 use serde::{Deserialize, Serialize};
 use yew::{function_component, html, prelude::*, Html, Properties};
-use material_yew::{MatButton, MatTextField, MatCircularProgress};
-use yew::virtual_dom::AttrValue;
+use material_yew::{MatButton, MatCircularProgress};
 
 const API_ROOT: Option<&'static str> = option_env!("API_ROOT");
 
@@ -159,16 +158,6 @@ pub fn utxo_list(_props: &UtxosListProps) -> Html {
             </div>
             <p class="message">{(*message).to_string()}</p>
         </>
-    }
-}
-
-#[derive(Properties, PartialEq)]
-pub struct UtxosListProps {}
-
-#[function_component(UtxosList)]
-pub fn utxo_list(_props: &UtxosListProps) -> Html {
-    html! {
-        <></>
     }
 }
 
