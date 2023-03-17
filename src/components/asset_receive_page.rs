@@ -30,12 +30,8 @@ pub struct QrCodeProp {
 
 #[function_component(QrCodeView)]
 pub fn qr_code(props: &QrCodeProp) -> Html {
-    let code = QrCode::with_version(
-        (props.invoice).as_bytes(),
-        Version::Normal(12),
-        EcLevel::M,
-    )
-    .unwrap();
+    let code =
+        QrCode::with_version((props.invoice).as_bytes(), Version::Normal(12), EcLevel::M).unwrap();
     let image = code
         .render()
         .min_dimensions(300, 300)
