@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 
+const API_ROOT: Option<&'static str> = option_env!("API_ROOT");
+
 #[derive(Serialize, Deserialize)]
 pub struct RefreshParams {
     asset_id: Option<String>,
@@ -20,7 +22,8 @@ pub fn refresh_button() -> Html {
     let onclick = Callback::from(move |_: MouseEvent| {
         spawn_local(async {
             match reqwest::Client::new()
-                .put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/refresh")
+                //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/refresh")
+                .post(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/refresh")
                 .json(&RefreshParams {
                     asset_id: None,
                     filter: Vec::<RefreshFilter>::new(),

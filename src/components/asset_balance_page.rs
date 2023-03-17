@@ -1,16 +1,41 @@
 use super::balance_page::{AssetType, AssetsParams, AssetsResult};
 use super::common::RefreshButton;
+use super::utxos_page::Outpoint;
 use material_yew::MatButton;
+use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 use yew::{
     function_component, html, prelude::*, use_state, virtual_dom::AttrValue, Html, Properties,
 };
 use yew_router::prelude::*;
 
+const API_ROOT: Option<&'static str> = option_env!("API_ROOT");
+
+#[derive(Deserialize, Serialize, Clone, PartialEq)]
+pub struct Transfer {
+    idx: String,
+    created_at: String,
+    updated_at: String,
+    status: String,
+    amount: String,
+    kind: String,
+    txid: Option<String>,
+    blinded_utxo: Option<String>,
+    unblinded_utxo: Option<Outpoint>,
+    change_utxo: Option<Outpoint>,
+    blinding_secret: Option<String>,
+    expiration: Option<String>,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct TransfersParams {
+    pub asset_id: String,
+}
+
 enum PageMode {
     RGB20,
     RGB121,
-    UNKNOWN,
+    Unknown,
 }
 
 #[derive(Properties, PartialEq)]
@@ -25,7 +50,7 @@ pub fn receive_button(props: &SendReceiveButtonProp) -> Html {
     let asset_id = props.asset_id.clone();
     let onclick = Callback::from(move |_| {
         let asset_id = asset_id.clone();
-        navigator.push(crate::Route::AssetReceivePageRoute { asset_id });
+        navigator.push(crate::Route::AssetReceive { asset_id });
     });
     html! {
         <div {onclick}>
@@ -40,7 +65,7 @@ fn send_button(props: &SendReceiveButtonProp) -> Html {
     let asset_id = props.asset_id.clone();
     let onclick = Callback::from(move |_| {
         let asset_id = asset_id.clone();
-        navigator.push(crate::Route::AssetSendPageRoute { asset_id });
+        navigator.push(crate::Route::AssetSend { asset_id });
     });
     html! {
         <div {onclick}>
@@ -56,29 +81,38 @@ pub struct AssetBalancePageInnerProp {
 
 #[function_component(AssetBalancePageInner)]
 pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
-    let asset_id = use_state(|| "unknown".to_string());
-    let page_mode = use_state(|| PageMode::UNKNOWN);
+    let asset_id = prop.asset_id.clone();
+    let page_mode = use_state(|| PageMode::Unknown);
     let name = use_state(|| "Unknown".to_string());
     let ticker = use_state(|| "UNKNOWN".to_string());
     let total_balance = use_state(|| 0.0f64);
+    let precision = use_state(|| 0i32);
 
-    let onload = {
+    let transfer_list = use_state_eq(Vec::<Transfer>::new);
+
+    let content = {
         match *page_mode {
-            PageMode::UNKNOWN => {
+            PageMode::Unknown => {
+                let t_list = transfer_list.clone();
                 let client = reqwest::Client::new();
                 let name = name.clone();
                 let ticker = ticker.clone();
                 let total_balance = total_balance.clone();
+                let precision = precision;
                 spawn_local(async move {
                     let res = client
-                        .put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/assets")
+                        //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/assets")
+                        .put(
+                            API_ROOT.unwrap_or("http://localhost:8080").to_owned()
+                                + "/wallet/assets",
+                        )
                         .json(&AssetsParams {
                             filter_asset_types: Vec::<AssetType>::new(),
                         })
                         .send()
                         .await;
-                    match res {
-                        Ok(res) => match res.json::<AssetsResult>().await {
+                    if let Ok(res) = res {
+                        match res.json::<AssetsResult>().await {
                             Ok(json) => {
                                 {
                                     let rgb20s = json
@@ -90,11 +124,20 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                                     if rgb20s.len() == 1 {
                                         let rgb20 = rgb20s[0].clone();
                                         page_mode.set(PageMode::RGB20);
-                                        asset_id.set(rgb20.asset_id.clone());
+                                        //asset_id.set(rgb20.asset_id.clone());
                                         name.set(rgb20.name.clone());
                                         ticker.set(rgb20.ticker.clone());
-                                        total_balance.set(rgb20.balance.spendable.parse().unwrap());
-                                        return;
+                                        let spendable =
+                                            rgb20.balance.spendable.parse::<f64>().unwrap();
+                                        let settled = rgb20.balance.settled.parse::<f64>().unwrap();
+                                        let future = rgb20.balance.future.parse::<f64>().unwrap();
+                                        precision.set(rgb20.precision as i32);
+                                        let precision = rgb20.precision;
+                                        total_balance.set(
+                                            (spendable + settled + future)
+                                                / 10f64.powi(precision as i32),
+                                        );
+                                        //return;
                                     }
                                 }
                                 {
@@ -107,7 +150,7 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                                     if rgb121s.len() == 1 {
                                         let rgb121 = rgb121s[0].clone();
                                         page_mode.set(PageMode::RGB121);
-                                        asset_id.set(rgb121.asset_id.clone());
+                                        //asset_id.set(rgb121.asset_id.clone());
                                         name.set(rgb121.name.clone());
                                         total_balance
                                             .set(rgb121.balance.spendable.parse().unwrap());
@@ -117,31 +160,89 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                             Err(e) => {
                                 log::error!("{:?}", e);
                             }
-                        },
-                        _ => {}
+                        }
                     };
+
+                    let params = TransfersParams {
+                        asset_id: asset_id.clone(),
+                    };
+                    let res = client
+                        .put(
+                            API_ROOT.unwrap_or("http://localhost:8080").to_owned()
+                                + "/wallet/transfers",
+                        )
+                        .json(&params)
+                        .send()
+                        .await;
+                    log::info!("{:#?}", res);
+                    match res {
+                        Ok(res) => match res.json::<Vec<Transfer>>().await {
+                            Ok(json) => {
+                                t_list.set(json);
+                            }
+                            Err(e) => {
+                                log::error!("{:?}", e);
+                            }
+                        },
+                        Err(e) => {
+                            log::error!("{:?}", e);
+                        }
+                    }
                 });
             }
-            _ => {}
+            PageMode::RGB20 => {}
+            PageMode::RGB121 => {}
         }
-        html! { <></> }
+        //let now = std::time::Instant::now();
+        //log::info!("{:#?}", now);
+        html! {
+           <>
+           {"Transactions"}
+           //<div class="list-group">
+           {
+               (*transfer_list).iter().enumerate().map(|(_,transfer)| {
+                   //let spendable = asset.balance.spendable.clone().parse::<f64>().unwrap();
+                   html! {
+                       if !(transfer.status == "WaitingCounterparty" && transfer.expiration.clone()
+                           .unwrap_or_else(|| "1".to_string())
+                           .parse::<u128>()
+                           .unwrap() < 1678775312) {
+                           <div class="list-group-item list-group-item-action flex-column align-items-start">
+                               <div class="d-flex w-100 justify-content-between">
+
+                                   if transfer.kind == "receive" {
+                                       <h5 class="mb-1">{"+"}{transfer.amount.clone()}</h5>
+                                   } else if transfer.kind == "send" {
+                                       <h5 class="mb-1">{"-"}{transfer.amount.clone()}</h5>
+                                   } else if transfer.kind == "issuance" {
+                                       <h5 class="mb-1">{"+"}{transfer.amount.clone()}</h5>
+                                   }
+                                   //<small>{spendable / 10f64.powi(asset.precision as i32)}</small>
+                               </div>
+                               <p class="mb-1 truncate">{transfer.status.clone()}</p>
+                           </div>
+                       }
+                   }}).collect::<Html>()
+           }
+           </>
+        }
     };
 
     html! {
         <>
         <div class="container">
-            <h1 style="text-align: center">{(*name).clone()}</h1>
-            <div style="text-align: center">{"Total Balance"}</div>
-            <h2 style="text-align: center">{*total_balance.clone()} {" "} {(*ticker).clone()}</h2>
+            <h1>{(*name).clone()}</h1>
+            <div>{"Total Balance"}</div>
+            <h2>{*total_balance.clone()} {" "} {(*ticker).clone()}</h2>
             <div class="row justify-content-evenly">
-                <div class="container border">
-                    <div class="col-12">{"Asset ID"}</div>
-                    <div class="col-12">{prop.asset_id.clone()}</div>
+                <div class="container border asset_id">
+                    <div>{"Asset ID"}</div>
+                    <div>{prop.asset_id.clone()}</div>
                 </div>
                 <div class="container">
                     <div class="row justify-content-evenly">
                         <div class="col-4">
-                            <ReceiveButton label="Receive" asset_id={"_" /*prop.asset_id.clone()*/ }/>
+                            <ReceiveButton label="Receive" asset_id={prop.asset_id.clone()}/>
                         </div>
                         <div class="col-4">
                             <SendButton label="Send" asset_id={prop.asset_id.clone()}/>
@@ -149,11 +250,11 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                     </div>
                 </div>
             </div>
-            <div class="row col-1">
-                <h2 class="col">{"Transactions"}</h2>
-            </div>
+            //<div class="row col-1">
+            //    <h2 class="col">{"Transactions"}</h2>
+            //</div>
         </div>
-        {onload}
+        {content}
         <RefreshButton/>
         </>
     }

@@ -6,9 +6,9 @@ use material_yew::{MatButton, MatList, MatListItem, MatTextField};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 use yew::{function_component, html, prelude::*, use_state, Html, Properties};
-use yew_router::prelude::*;
 
-const KEY: &'static str = "shiro.mnemonic";
+const KEY: &str = "shiro.mnemonic";
+const API_ROOT: Option<&'static str> = option_env!("API_ROOT");
 
 #[derive(Properties, PartialEq)]
 pub struct MnemonicWordProp {
@@ -40,7 +40,7 @@ pub fn mnemonic_word_list(props: &MnemonicWordListProp) -> Html {
             let oninput = {
                 let onchanged = props.onchanged.clone();
                 Callback::from(move |message: String| {
-                    onchanged.emit(message.clone());
+                    onchanged.emit(message);
                 })
             };
             html! {
@@ -126,12 +126,12 @@ pub struct OpenWalletButtonProps {
 #[function_component(OpenWalletButton)]
 pub fn open_wallet_button(props: &OpenWalletButtonProps) -> Html {
     let onclick = {
-        let navigator = use_history().unwrap();
+        //let navigator = use_history().unwrap();
         let onclick = props.onclick.clone();
         Callback::from(move |e: MouseEvent| {
             e.default_prevented();
             onclick.emit(e);
-            navigator.push(crate::Route::BalancePageRoute);
+            //navigator.push(crate::Route::BalancePageRoute);
         })
     };
 
@@ -233,7 +233,7 @@ pub fn page(_: &PageProps) -> Html {
                     {
                         let wallet = WalletParams {
                             mnemonic: str.to_string(),
-                            pubkey: pubkey.clone(),
+                            pubkey,
                         };
                         let go_online = GoOnlineParams {
                             skip_consistency_check: true,
@@ -242,15 +242,20 @@ pub fn page(_: &PageProps) -> Html {
                         let client = reqwest::Client::new();
                         spawn_local(async move {
                             let res = client
-                                .put("http://shiro.westus2.cloudapp.azure.com:4320/wallet")
-                                //.put("http://localhost:8080/wallet")
+                                //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet")
+                                .put(
+                                    API_ROOT.unwrap_or("http://localhost:8080").to_owned()
+                                        + "/wallet",
+                                )
                                 .json(&wallet)
                                 .send()
                                 .await;
                             log::info!("{:#?}", res);
                             let res = client
+                                //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/go_online")
                                 .put(
-                                    "http://shiro.westus2.cloudapp.azure.com:4320/wallet/go_online",
+                                    API_ROOT.unwrap_or("http://localhost:8080").to_owned()
+                                        + "/wallet/go_online",
                                 )
                                 .json(&go_online)
                                 .send()
@@ -267,11 +272,11 @@ pub fn page(_: &PageProps) -> Html {
 
     html! {
         <>
-            <h1>{"Fill your mnemonic word in."}</h1>
+            <p>{"Fill your mnemonic word in."}</p>
             <MatList>
                 <MnemonicWordList words={(*words).clone()} {onchanged}/>
                 <GenerateKeysButton onclick={onclick_generate_keys_button}/>
-                <OpenWalletButton onclick={onclick_open_wallet_button} disabled={(*is_invalid_mnemonic).clone()}/>
+                <OpenWalletButton onclick={onclick_open_wallet_button} disabled={*is_invalid_mnemonic}/>
                 <ClearFormButton onclick={onclick_clear_form_button}/>
                 <RevertFormButton onclick={onclick_revert_form_button}/>
             </MatList>

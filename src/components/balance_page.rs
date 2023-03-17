@@ -5,8 +5,10 @@ use ::material_yew::{MatTab, MatTabBar};
 use serde::Deserialize;
 use serde::Serialize;
 use wasm_bindgen_futures::spawn_local;
-use yew::{function_component, html, prelude::*, use_state, Html, Properties};
+use yew::{function_component, html, prelude::*, use_state, Component, Context, Html, Properties};
 use yew_router::prelude::Link;
+
+const API_ROOT: Option<&'static str> = option_env!("API_ROOT");
 
 /// The type of an asset
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
@@ -68,7 +70,7 @@ pub struct AssetsResult {
 
 enum Tabs {
     Fungible,
-    NFT,
+    Nft,
 }
 
 #[derive(Properties, PartialEq)]
@@ -77,14 +79,14 @@ pub struct BalancePageProps {}
 #[function_component(BalancePageInner)]
 pub fn page(_props: &BalancePageProps) -> Html {
     let tab = use_state(|| Tabs::Fungible);
-    let fungible_list = use_state_eq(|| Vec::<AssetRgb20>::new());
-    let nft_list = use_state_eq(|| Vec::<AssetRgb121>::new());
+    let fungible_list = use_state_eq(Vec::<AssetRgb20>::new);
+    let nft_list = use_state_eq(Vec::<AssetRgb121>::new);
 
     let on_activated = {
         let tab = tab.clone();
         Callback::from(move |index| match index {
             0 => tab.set(Tabs::Fungible),
-            1 => tab.set(Tabs::NFT),
+            1 => tab.set(Tabs::Nft),
             num => unreachable!("{}", num),
         })
     };
@@ -95,8 +97,8 @@ pub fn page(_props: &BalancePageProps) -> Html {
         let n_list = nft_list.clone();
         spawn_local(async move {
             let res = client
-                .put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/assets")
-                //.put("http://localhost:8080/wallet/assets")
+                //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/assets")
+                .put(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/assets")
                 .json(&AssetsParams {
                     filter_asset_types: Vec::<AssetType>::new(),
                 })
@@ -106,21 +108,6 @@ pub fn page(_props: &BalancePageProps) -> Html {
                 Ok(res) => match res.json::<AssetsResult>().await {
                     Ok(json) => {
                         f_list.set(json.assets.rgb20);
-                        //mock start
-                        /*
-                        f_list.set(vec![AssetRgb20 {
-                            asset_id: "hoge".to_string(),
-                            ticker: "FAKEMONA".to_string(),
-                            name: "Fake Monacoin".to_string(),
-                            precision: 8,
-                            balance: Balance {
-                                settled: "0".to_string(),
-                                future: "0".to_string(),
-                                spendable: "1".to_string(),
-                            },
-                        }]);
-                         */
-                        //mock end
                         n_list.set(json.assets.rgb121);
                         log::info!("Got assets");
                     }
@@ -136,29 +123,34 @@ pub fn page(_props: &BalancePageProps) -> Html {
         match *tab {
             Tabs::Fungible => html! {
                 <>
+                <div class="list-group">
                 {
                     (*fungible_list).iter().enumerate().map(|(_,asset)| {
                         let spendable = asset.balance.spendable.clone().parse::<f64>().unwrap();
                         html! {
-                            <Link<Route> to={Route::AssetBalancePageRoute {asset_id: asset.asset_id.clone()}}>
-                            <div class="container">
-                            <div> {asset.asset_id.clone()} </div>
-                            <div> {asset.ticker.clone()} {"("} {asset.name.clone()} {")"}</div>
-                            <div> {spendable / 10f64.powi(asset.precision as i32)} </div>
+                            <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                            <Link<Route> to={Route::AssetBalance {asset_id: asset.asset_id.clone()}}>
+                            <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{asset.name.clone()}</h5>
+                            <small>{spendable / 10f64.powi(asset.precision as i32)}</small>
                             </div>
+                            <p class="mb-1 truncate">{asset.asset_id.clone()}</p>
                             </Link<Route>>
+                            </a>
                         }}).collect::<Html>()
                 }
+                </div>
                 </>
             },
-            Tabs::NFT => html! {
+            Tabs::Nft => html! {
                 <>
                 {
                     (*nft_list).iter().enumerate().map(|(_,asset)| {
                         let spendable = asset.balance.spendable.clone().parse::<f64>().unwrap();
                         html! {
+                            // FIXME
                             <div class="container">
-                                <div>{asset.asset_id.clone()}</div>
+                                //<div>{asset.asset_id.clone()}</div>
                                 <div>{asset.name.clone()}</div>
                                 <div>{spendable / 10f64.powi(asset.precision as i32)}</div>
                                 <div> {match asset.description.clone() {
