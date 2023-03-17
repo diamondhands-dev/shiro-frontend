@@ -56,7 +56,7 @@ pub fn utxo_list(_props: &UtxosListProps) -> Html {
     let new_utxo = use_state(|| false);
     let message = use_state(|| "".to_string());
 
-    let utxo_list = use_state_eq(|| Vec::<UtxoRGB>::new());
+    let utxo_list = use_state_eq(Vec::<UtxoRGB>::new);
 
     let onclick = {
         let message = message.clone();

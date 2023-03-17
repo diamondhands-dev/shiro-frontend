@@ -24,7 +24,7 @@ struct Recipient {
 enum PageMode {
     RGB20,
     RGB121,
-    UNKNOWN,
+    Unknown,
 }
 #[derive(Properties, PartialEq)]
 pub struct AssetSendPageInnerProp {
@@ -37,7 +37,7 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
     let sending = use_state(|| false);
 
     let asset_id = use_state(|| prop.asset_id.clone());
-    let page_mode = use_state(|| PageMode::UNKNOWN);
+    let page_mode = use_state(|| PageMode::Unknown);
     let ticker = use_state(|| "UNKNOWN".to_string());
     let total_balance = use_state(|| 0.0f64);
     let spendable_balance = use_state(|| 0.0f64);
@@ -49,7 +49,7 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
 
     let onload = {
         match *page_mode {
-            PageMode::UNKNOWN => {
+            PageMode::Unknown => {
                 let client = reqwest::Client::new();
                 let asset_id = asset_id.clone();
                 let ticker = ticker.clone();
@@ -68,61 +68,59 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
                         })
                         .send()
                         .await;
-                    match res {
-                        Ok(res) => match res.json::<AssetsResult>().await {
-                            Ok(json) => {
-                                {
-                                    let rgb20s = json
-                                        .assets
-                                        .rgb20
-                                        .into_iter()
-                                        .filter(|x| x.asset_id == *asset_id)
-                                        .collect::<Vec<_>>();
-                                    if rgb20s.len() == 1 {
-                                        let rgb20 = rgb20s[0].clone();
-                                        page_mode.set(PageMode::RGB20);
-                                        asset_id.set(rgb20.asset_id.clone());
-                                        ticker.set(rgb20.ticker.clone());
-                                        let spendable =
-                                            rgb20.balance.spendable.parse::<f64>().unwrap();
-                                        let settled = rgb20.balance.settled.parse::<f64>().unwrap();
-                                        let future = rgb20.balance.future.parse::<f64>().unwrap();
-                                        precision.set(rgb20.precision as i32);
-                                        let precision = rgb20.precision;
-                                        total_balance.set(
-                                            (spendable + settled + future)
-                                                / 10f64.powi(precision as i32),
-                                        );
-                                        spendable_balance
-                                            .set(spendable / 10f64.powi(precision as i32));
-                                        return;
-                                    }
-                                }
-                                {
-                                    let rgb121s = json
-                                        .assets
-                                        .rgb121
-                                        .into_iter()
-                                        .filter(|x| x.asset_id == *asset_id)
-                                        .collect::<Vec<_>>();
-                                    if rgb121s.len() == 1 {
-                                        let rgb121 = rgb121s[0].clone();
-                                        page_mode.set(PageMode::RGB121);
-                                        asset_id.set(rgb121.asset_id.clone());
-                                        total_balance
-                                            .set(rgb121.balance.spendable.parse().unwrap());
-                                    }
+                    if let Ok(res) = res { match res.json::<AssetsResult>().await {
+                        Ok(json) => {
+                            {
+                                let rgb20s = json
+                                    .assets
+                                    .rgb20
+                                    .into_iter()
+                                    .filter(|x| x.asset_id == *asset_id)
+                                    .collect::<Vec<_>>();
+                                if rgb20s.len() == 1 {
+                                    let rgb20 = rgb20s[0].clone();
+                                    page_mode.set(PageMode::RGB20);
+                                    asset_id.set(rgb20.asset_id.clone());
+                                    ticker.set(rgb20.ticker.clone());
+                                    let spendable =
+                                        rgb20.balance.spendable.parse::<f64>().unwrap();
+                                    let settled = rgb20.balance.settled.parse::<f64>().unwrap();
+                                    let future = rgb20.balance.future.parse::<f64>().unwrap();
+                                    precision.set(rgb20.precision as i32);
+                                    let precision = rgb20.precision;
+                                    total_balance.set(
+                                        (spendable + settled + future)
+                                            / 10f64.powi(precision as i32),
+                                    );
+                                    spendable_balance
+                                        .set(spendable / 10f64.powi(precision as i32));
+                                    return;
                                 }
                             }
-                            Err(e) => {
-                                log::error!("{:?}", e);
+                            {
+                                let rgb121s = json
+                                    .assets
+                                    .rgb121
+                                    .into_iter()
+                                    .filter(|x| x.asset_id == *asset_id)
+                                    .collect::<Vec<_>>();
+                                if rgb121s.len() == 1 {
+                                    let rgb121 = rgb121s[0].clone();
+                                    page_mode.set(PageMode::RGB121);
+                                    asset_id.set(rgb121.asset_id.clone());
+                                    total_balance
+                                        .set(rgb121.balance.spendable.parse().unwrap());
+                                }
                             }
-                        },
-                        _ => {}
-                    };
+                        }
+                        Err(e) => {
+                            log::error!("{:?}", e);
+                        }
+                    }};
                 });
             }
-            _ => {}
+            PageMode::RGB20 => {}
+            PageMode::RGB121 => {}
         }
         html! { <></> }
     };
@@ -130,11 +128,11 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
     let onclick = {
         let sending = sending.clone();
         let message = message.clone();
-        let asset_id = asset_id.clone();
+        let asset_id = asset_id;
         let pay_to = pay_to.clone();
         let amount_to_pay = amount_to_pay.clone();
         let fee_rate = fee_rate.clone();
-        let precision = precision.clone();
+        let precision = precision;
         Callback::from(move |_: MouseEvent| {
             let client = reqwest::Client::new();
             let sending = sending.clone();
@@ -195,7 +193,7 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
 
     let oninput_amount_to_pay = {
         let amount_to_pay = amount_to_pay.clone();
-        let _invalid_form = invalid_form.clone();
+        let _invalid_form = invalid_form;
         Callback::from(move |value: String| {
             match value.parse::<f64>() {
                 Ok(v) => amount_to_pay.set(v),
@@ -223,9 +221,9 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
         <div class="container">
             <h1 style="text-align: center">{"Send"}</h1>
             <div style="text-align: center">{"Total Balence"}</div>
-            <h2 style="text-align: center">{(*total_balance).clone()} {" "} {(*ticker).clone()}</h2>
+            <h2 style="text-align: center">{*total_balance} {" "} {(*ticker).clone()}</h2>
             <div style="text-align: center">{"Spendable Balence"}</div>
-            <h2 style="text-align: center">{(*spendable_balance).clone()} {" "} {(*ticker).clone()}</h2>
+            <h2 style="text-align: center">{*spendable_balance} {" "} {(*ticker).clone()}</h2>
         </div>
         <div class="container">
             <h3>{"Pay to"}</h3>

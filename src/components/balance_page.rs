@@ -70,7 +70,7 @@ pub struct AssetsResult {
 
 enum Tabs {
     Fungible,
-    NFT,
+    Nft,
 }
 
 #[derive(Properties, PartialEq)]
@@ -79,14 +79,14 @@ pub struct BalancePageProps {}
 #[function_component(BalancePageInner)]
 pub fn page(_props: &BalancePageProps) -> Html {
     let tab = use_state(|| Tabs::Fungible);
-    let fungible_list = use_state_eq(|| Vec::<AssetRgb20>::new());
-    let nft_list = use_state_eq(|| Vec::<AssetRgb121>::new());
+    let fungible_list = use_state_eq(Vec::<AssetRgb20>::new);
+    let nft_list = use_state_eq(Vec::<AssetRgb121>::new);
 
     let on_activated = {
         let tab = tab.clone();
         Callback::from(move |index| match index {
             0 => tab.set(Tabs::Fungible),
-            1 => tab.set(Tabs::NFT),
+            1 => tab.set(Tabs::Nft),
             num => unreachable!("{}", num),
         })
     };
@@ -129,7 +129,7 @@ pub fn page(_props: &BalancePageProps) -> Html {
                         let spendable = asset.balance.spendable.clone().parse::<f64>().unwrap();
                         html! {
                             <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
-                            <Link<Route> to={Route::AssetBalancePageRoute {asset_id: asset.asset_id.clone()}}>
+                            <Link<Route> to={Route::AssetBalance {asset_id: asset.asset_id.clone()}}>
                             <div class="d-flex w-100 justify-content-between">
                             <h5 class="mb-1">{asset.name.clone()}</h5>
                             <small>{spendable / 10f64.powi(asset.precision as i32)}</small>
@@ -142,7 +142,7 @@ pub fn page(_props: &BalancePageProps) -> Html {
                 </div>
                 </>
             },
-            Tabs::NFT => html! {
+            Tabs::Nft => html! {
                 <>
                 {
                     (*nft_list).iter().enumerate().map(|(_,asset)| {

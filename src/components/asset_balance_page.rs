@@ -35,7 +35,7 @@ pub struct TransfersParams {
 enum PageMode {
     RGB20,
     RGB121,
-    UNKNOWN,
+    Unknown,
 }
 
 #[derive(Properties, PartialEq)]
@@ -50,7 +50,7 @@ pub fn receive_button(props: &SendReceiveButtonProp) -> Html {
     let asset_id = props.asset_id.clone();
     let onclick = Callback::from(move |_| {
         let asset_id = asset_id.clone();
-        navigator.push(crate::Route::AssetReceivePageRoute { asset_id });
+        navigator.push(crate::Route::AssetReceive { asset_id });
     });
     html! {
         <div {onclick}>
@@ -65,7 +65,7 @@ fn send_button(props: &SendReceiveButtonProp) -> Html {
     let asset_id = props.asset_id.clone();
     let onclick = Callback::from(move |_| {
         let asset_id = asset_id.clone();
-        navigator.push(crate::Route::AssetSendPageRoute { asset_id });
+        navigator.push(crate::Route::AssetSend { asset_id });
     });
     html! {
         <div {onclick}>
@@ -82,23 +82,23 @@ pub struct AssetBalancePageInnerProp {
 #[function_component(AssetBalancePageInner)]
 pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
     let asset_id = prop.asset_id.clone();
-    let page_mode = use_state(|| PageMode::UNKNOWN);
+    let page_mode = use_state(|| PageMode::Unknown);
     let name = use_state(|| "Unknown".to_string());
     let ticker = use_state(|| "UNKNOWN".to_string());
     let total_balance = use_state(|| 0.0f64);
     let precision = use_state(|| 0i32);
 
-    let transfer_list = use_state_eq(|| Vec::<Transfer>::new());
+    let transfer_list = use_state_eq(Vec::<Transfer>::new);
 
     let content = {
         match *page_mode {
-            PageMode::UNKNOWN => {
+            PageMode::Unknown => {
                 let t_list = transfer_list.clone();
                 let client = reqwest::Client::new();
                 let name = name.clone();
                 let ticker = ticker.clone();
                 let total_balance = total_balance.clone();
-                let precision = precision.clone();
+                let precision = precision;
                 spawn_local(async move {
                     let res = client
                         //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/assets")
@@ -111,58 +111,55 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                         })
                         .send()
                         .await;
-                    match res {
-                        Ok(res) => match res.json::<AssetsResult>().await {
-                            Ok(json) => {
-                                {
-                                    let rgb20s = json
-                                        .assets
-                                        .rgb20
-                                        .into_iter()
-                                        .filter(|x| x.asset_id == *asset_id)
-                                        .collect::<Vec<_>>();
-                                    if rgb20s.len() == 1 {
-                                        let rgb20 = rgb20s[0].clone();
-                                        page_mode.set(PageMode::RGB20);
-                                        //asset_id.set(rgb20.asset_id.clone());
-                                        name.set(rgb20.name.clone());
-                                        ticker.set(rgb20.ticker.clone());
-                                        let spendable =
-                                            rgb20.balance.spendable.parse::<f64>().unwrap();
-                                        let settled = rgb20.balance.settled.parse::<f64>().unwrap();
-                                        let future = rgb20.balance.future.parse::<f64>().unwrap();
-                                        precision.set(rgb20.precision as i32);
-                                        let precision = rgb20.precision;
-                                        total_balance.set(
-                                            (spendable + settled + future)
-                                                / 10f64.powi(precision as i32),
-                                        );
-                                        //return;
-                                    }
-                                }
-                                {
-                                    let rgb121s = json
-                                        .assets
-                                        .rgb121
-                                        .into_iter()
-                                        .filter(|x| x.asset_id == *asset_id)
-                                        .collect::<Vec<_>>();
-                                    if rgb121s.len() == 1 {
-                                        let rgb121 = rgb121s[0].clone();
-                                        page_mode.set(PageMode::RGB121);
-                                        //asset_id.set(rgb121.asset_id.clone());
-                                        name.set(rgb121.name.clone());
-                                        total_balance
-                                            .set(rgb121.balance.spendable.parse().unwrap());
-                                    }
+                    if let Ok(res) = res { match res.json::<AssetsResult>().await {
+                        Ok(json) => {
+                            {
+                                let rgb20s = json
+                                    .assets
+                                    .rgb20
+                                    .into_iter()
+                                    .filter(|x| x.asset_id == *asset_id)
+                                    .collect::<Vec<_>>();
+                                if rgb20s.len() == 1 {
+                                    let rgb20 = rgb20s[0].clone();
+                                    page_mode.set(PageMode::RGB20);
+                                    //asset_id.set(rgb20.asset_id.clone());
+                                    name.set(rgb20.name.clone());
+                                    ticker.set(rgb20.ticker.clone());
+                                    let spendable =
+                                        rgb20.balance.spendable.parse::<f64>().unwrap();
+                                    let settled = rgb20.balance.settled.parse::<f64>().unwrap();
+                                    let future = rgb20.balance.future.parse::<f64>().unwrap();
+                                    precision.set(rgb20.precision as i32);
+                                    let precision = rgb20.precision;
+                                    total_balance.set(
+                                        (spendable + settled + future)
+                                            / 10f64.powi(precision as i32),
+                                    );
+                                    //return;
                                 }
                             }
-                            Err(e) => {
-                                log::error!("{:?}", e);
+                            {
+                                let rgb121s = json
+                                    .assets
+                                    .rgb121
+                                    .into_iter()
+                                    .filter(|x| x.asset_id == *asset_id)
+                                    .collect::<Vec<_>>();
+                                if rgb121s.len() == 1 {
+                                    let rgb121 = rgb121s[0].clone();
+                                    page_mode.set(PageMode::RGB121);
+                                    //asset_id.set(rgb121.asset_id.clone());
+                                    name.set(rgb121.name.clone());
+                                    total_balance
+                                        .set(rgb121.balance.spendable.parse().unwrap());
+                                }
                             }
-                        },
-                        _ => {}
-                    };
+                        }
+                        Err(e) => {
+                            log::error!("{:?}", e);
+                        }
+                    }};
 
                     let params = TransfersParams {
                         asset_id: asset_id.clone(),
@@ -191,7 +188,8 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                     }
                 });
             }
-            _ => {}
+            PageMode::RGB20 => {}
+            PageMode::RGB121 => {}
         }
         //let now = std::time::Instant::now();
         //log::info!("{:#?}", now);
@@ -204,7 +202,7 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                    //let spendable = asset.balance.spendable.clone().parse::<f64>().unwrap();
                    html! {
                        if !(transfer.status == "WaitingCounterparty" && transfer.expiration.clone()
-                           .unwrap_or("1".to_string())
+                           .unwrap_or_else(|| "1".to_string())
                            .parse::<u128>()
                            .unwrap() < 1678775312) {
                            <div class="list-group-item list-group-item-action flex-column align-items-start">

@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 use yew::{function_component, html, prelude::*, use_state, Html, Properties};
 
-const KEY: &'static str = "shiro.mnemonic";
+const KEY: &str = "shiro.mnemonic";
 const API_ROOT: Option<&'static str> = option_env!("API_ROOT");
 
 #[derive(Properties, PartialEq)]
@@ -40,7 +40,7 @@ pub fn mnemonic_word_list(props: &MnemonicWordListProp) -> Html {
             let oninput = {
                 let onchanged = props.onchanged.clone();
                 Callback::from(move |message: String| {
-                    onchanged.emit(message.clone());
+                    onchanged.emit(message);
                 })
             };
             html! {
@@ -233,7 +233,7 @@ pub fn page(_: &PageProps) -> Html {
                     {
                         let wallet = WalletParams {
                             mnemonic: str.to_string(),
-                            pubkey: pubkey.clone(),
+                            pubkey,
                         };
                         let go_online = GoOnlineParams {
                             skip_consistency_check: true,
@@ -276,7 +276,7 @@ pub fn page(_: &PageProps) -> Html {
             <MatList>
                 <MnemonicWordList words={(*words).clone()} {onchanged}/>
                 <GenerateKeysButton onclick={onclick_generate_keys_button}/>
-                <OpenWalletButton onclick={onclick_open_wallet_button} disabled={(*is_invalid_mnemonic).clone()}/>
+                <OpenWalletButton onclick={onclick_open_wallet_button} disabled={*is_invalid_mnemonic}/>
                 <ClearFormButton onclick={onclick_clear_form_button}/>
                 <RevertFormButton onclick={onclick_revert_form_button}/>
             </MatList>

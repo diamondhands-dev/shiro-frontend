@@ -87,8 +87,8 @@ pub fn page(_props: &IssueAssetPageProps) -> Html {
             let asset = IssueParams {
                 ticker: ticker.to_string(),
                 name: name.to_string(),
-                presision: presision,
-                amounts: amounts,
+                presision,
+                amounts,
             };
             let client = reqwest::Client::new();
             spawn_local(async move {
