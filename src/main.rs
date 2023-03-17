@@ -1,3 +1,5 @@
+#![allow(clippy::let_unit_value)]
+
 use material_yew::MatIcon;
 use yew::prelude::*;
 use yew_router::prelude::*;
@@ -16,21 +18,21 @@ mod components;
 #[derive(Clone, Routable, PartialEq)]
 enum Route {
     #[at("/")]
-    MnemonicPageRoute,
+    Mnemonic,
     #[at("/bitcoin")]
-    BitcoinPageRoute,
+    Bitcoin,
     #[at("/issue")]
-    IssueAssetPageRoute,
+    IssueAsset,
     #[at("/utxos")]
-    UtxosPageRoute,
+    Utxos,
     #[at("/balance")]
-    BalancePageRoute,
+    Balance,
     #[at("/balance/receive/:asset_id")]
-    AssetReceivePageRoute { asset_id: String },
+    AssetReceive { asset_id: String },
     #[at("/balance/send/:asset_id")]
-    AssetSendPageRoute { asset_id: String },
+    AssetSend { asset_id: String },
     #[at("/balance/:asset_id")]
-    AssetBalancePageRoute { asset_id: String },
+    AssetBalance { asset_id: String },
 }
 
 #[derive(Properties, PartialEq)]
@@ -130,18 +132,18 @@ fn utxos_page() -> Html {
 
 fn switch(routes: &Route) -> Html {
     match routes {
-        Route::BalancePageRoute => html!( <BalancePageRoute/> ),
-        Route::BitcoinPageRoute => html!( <BitcoinPageRoute/> ),
-        Route::IssueAssetPageRoute => html!( <IssueAssetPageRoute/> ),
-        Route::MnemonicPageRoute => html!( <MnemonicPageRoute/> ),
-        Route::UtxosPageRoute => html!( <UtxosPageRoute/> ),
-        Route::AssetBalancePageRoute { asset_id } => {
+        Route::Balance => html!( <BalancePageRoute/> ),
+        Route::Bitcoin => html!( <BitcoinPageRoute/> ),
+        Route::IssueAsset => html!( <IssueAssetPageRoute/> ),
+        Route::Mnemonic => html!( <MnemonicPageRoute/> ),
+        Route::Utxos => html!( <UtxosPageRoute/> ),
+        Route::AssetBalance { asset_id } => {
             html!( <AssetBalancePageRoute asset_id={asset_id.clone()} /> )
         }
-        Route::AssetReceivePageRoute { asset_id } => {
+        Route::AssetReceive { asset_id } => {
             html!( <AssetReceivePageRoute asset_id={asset_id.clone()} /> )
         }
-        Route::AssetSendPageRoute { asset_id } => {
+        Route::AssetSend { asset_id } => {
             html!( <AssetSendPageRoute asset_id={asset_id.clone()} /> )
         }
     }
@@ -157,11 +159,11 @@ fn inject_navbar() -> Html {
                         </button>
                         <div class="collapse navbar-collapse" id="n_bar">
                             <ul class="navbar-nav active">
-                                 <li><Link<Route> classes={classes!("nav-link")} to={Route::MnemonicPageRoute}>{"Mnemonic"}</Link<Route>></li>
-                                 <li><Link<Route> classes={classes!("nav-link")} to={Route::BalancePageRoute}>{"Asset"}</Link<Route>></li>
-                                 <li><Link<Route> classes={classes!("nav-link")} to={Route::BitcoinPageRoute}>{"Bitcoin"}</Link<Route>></li>
-                                 <li><Link<Route> classes={classes!("nav-link")} to={Route::IssueAssetPageRoute}>{"Issue"}</Link<Route>></li>
-                                 <li><Link<Route> classes={classes!("nav-link")} to={Route::UtxosPageRoute}>{"UTXOs"}</Link<Route>></li>
+                                 <li><Link<Route> classes={classes!("nav-link")} to={Route::Mnemonic}>{"Mnemonic"}</Link<Route>></li>
+                                 <li><Link<Route> classes={classes!("nav-link")} to={Route::Balance}>{"Asset"}</Link<Route>></li>
+                                 <li><Link<Route> classes={classes!("nav-link")} to={Route::Bitcoin}>{"Bitcoin"}</Link<Route>></li>
+                                 <li><Link<Route> classes={classes!("nav-link")} to={Route::IssueAsset}>{"Issue"}</Link<Route>></li>
+                                 <li><Link<Route> classes={classes!("nav-link")} to={Route::Utxos}>{"UTXOs"}</Link<Route>></li>
                             </ul>
                         </div>
                     </div>

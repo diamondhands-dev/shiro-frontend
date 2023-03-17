@@ -19,5 +19,5 @@ cd shiro-frontend
 trunk serve --port=3000
 
 // or you can specify the backend endpoint as following
-// API_ROOT=http:localhost:8080 trunk serve --port=3000
+// API_ROOT=http://localhost:8080 trunk serve --port=3000
 ```
