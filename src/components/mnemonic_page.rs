@@ -2,13 +2,19 @@ use bdk::bitcoin::{secp256k1::Secp256k1, Network};
 use bdk::keys::bip39::{Language, Mnemonic};
 use bdk::keys::{DerivableKey, ExtendedKey};
 use gloo::storage::{LocalStorage, Storage};
-use material_yew::{MatButton, MatList, MatListItem, MatTextField};
+use material_yew::{MatButton, MatCircularProgress, MatIcon, MatList, MatListItem, MatTextField};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 use yew::{function_component, html, prelude::*, use_state, Html, Properties};
 
 const KEY: &str = "shiro.mnemonic";
 const API_ROOT: Option<&'static str> = option_env!("API_ROOT");
+
+#[derive(Deserialize, Serialize)]
+pub struct WalletResult {
+    pub mnemonic: String,
+    pub pubkey: String,
+}
 
 #[derive(Properties, PartialEq)]
 pub struct MnemonicWordProp {
@@ -21,7 +27,9 @@ pub struct MnemonicWordProp {
 pub fn mnemonic_word_field(props: &MnemonicWordProp) -> Html {
     html! {
         <MatListItem>
-            <MatTextField outlined=true label={props.label.clone()} value={props.value.clone()} oninput={props.oninput.clone()} />
+            <div class="small1">
+                <MatTextField size={100} outlined=true label={props.label.clone()} value={props.value.clone()} oninput={props.oninput.clone()} />
+            </div>
         </MatListItem>
     }
 }
@@ -131,7 +139,7 @@ pub fn open_wallet_button(props: &OpenWalletButtonProps) -> Html {
         Callback::from(move |e: MouseEvent| {
             e.default_prevented();
             onclick.emit(e);
-            //navigator.push(crate::Route::BalancePageRoute);
+            //navigator.push(crate::Route::Balance);
         })
     };
 
@@ -147,6 +155,9 @@ pub struct PageProps {}
 
 #[function_component(MnemonicPageInner)]
 pub fn page(_: &PageProps) -> Html {
+    let open = use_state(|| false);
+    let created = use_state(|| false);
+    let online = use_state(|| false);
     let mnemonic = LocalStorage::get(KEY).unwrap_or_else(|_| {
         LocalStorage::set(KEY, "").ok();
         "".to_string()
@@ -218,8 +229,15 @@ pub fn page(_: &PageProps) -> Html {
     let onclick_open_wallet_button = {
         let is_invalid_mnemonic = is_invalid_mnemonic.clone();
         let words = words.clone();
+        let open = open.clone();
+        let created = created.clone();
+        let online = online.clone();
         Callback::from(move |_| {
             let str = words.clone().join(" ");
+            let is_invalid_mnemonic = is_invalid_mnemonic.clone();
+            let open = open.clone();
+            let created = created.clone();
+            let online = online.clone();
             match Mnemonic::parse(&str) {
                 Ok(mnemonic) => {
                     let xkey: ExtendedKey = mnemonic
@@ -241,6 +259,7 @@ pub fn page(_: &PageProps) -> Html {
                         };
                         let client = reqwest::Client::new();
                         spawn_local(async move {
+                            open.set(true);
                             let res = client
                                 //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet")
                                 .put(
@@ -251,6 +270,22 @@ pub fn page(_: &PageProps) -> Html {
                                 .send()
                                 .await;
                             log::info!("{:#?}", res);
+                            match res {
+                                Ok(res) => match res.json::<WalletResult>().await {
+                                    Ok(_json) => {
+                                        created.set(true);
+                                    }
+                                    Err(e) => {
+                                        log::error!("{:?}", e);
+                                        created.set(false);
+                                    }
+                                },
+                                Err(e) => {
+                                    log::error!("{:#?}", e);
+                                    created.set(false);
+                                }
+                            }
+
                             let res = client
                                 //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/go_online")
                                 .put(
@@ -261,6 +296,23 @@ pub fn page(_: &PageProps) -> Html {
                                 .send()
                                 .await;
                             log::info!("{:#?}", res);
+                            match res {
+                                Ok(res) => match res.text().await {
+                                    Ok(json) => {
+                                        log::info!("go_online {:#?}", json);
+                                        online.set(true);
+                                    }
+                                    Err(e) => {
+                                        log::error!("{:?}", e);
+                                        online.set(false);
+                                    }
+                                },
+                                Err(e) => {
+                                    log::error!("{:#?}", e);
+                                    online.set(false);
+                                }
+                            }
+                            open.set(false);
                         });
                     }
                 }
@@ -273,13 +325,43 @@ pub fn page(_: &PageProps) -> Html {
     html! {
         <>
             <p>{"Fill your mnemonic word in."}</p>
+
             <MatList>
-                <MnemonicWordList words={(*words).clone()} {onchanged}/>
-                <GenerateKeysButton onclick={onclick_generate_keys_button}/>
+                    <MnemonicWordList words={(*words).clone()} {onchanged}/>
+            </MatList>
+
+            <div class="box">
+            if *open {
+                <MatCircularProgress indeterminate=true />
+            } else {
                 <OpenWalletButton onclick={onclick_open_wallet_button} disabled={*is_invalid_mnemonic}/>
+            }
+            </div>
+
+            <div class="box">
+                {"Wallet created"}
+                if *created {
+                    <MatIcon>{"check_circle"}</MatIcon>
+                } else {
+                    <MatIcon>{"block"}</MatIcon>
+                }
+            </div>
+
+            <div class="box">
+                {"Wallet online"}
+                if *online {
+                    <MatIcon>{"check_circle"}</MatIcon>
+                } else {
+                    <MatIcon>{"block"}</MatIcon>
+                }
+            </div>
+
+            <div class="box">
+                <GenerateKeysButton onclick={onclick_generate_keys_button}/>
                 <ClearFormButton onclick={onclick_clear_form_button}/>
                 <RevertFormButton onclick={onclick_revert_form_button}/>
-            </MatList>
+            </div>
+
         </>
     }
 }
