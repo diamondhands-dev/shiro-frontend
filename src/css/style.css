@@ -22,3 +22,12 @@ body {
 .asset_id {
   overflow-wrap: break-word;
 }
+
+.box {
+  display: flex;
+  padding: 10px;
+}
+
+.small {
+  height: 30px !important;
+}
