@@ -128,16 +128,25 @@ pub fn utxo_list(_props: &UtxosListProps) -> Html {
             .iter()
             .enumerate()
             .map(|(_, utxo_rgb)| {
-                //let spendable = utxo.balance.spendable.clone().parse::<f64>().unwrap();
                 html! {
                     // Passing data `asset_id`
-                    //<Link<Route> to={Route::AssetBalancePageRoute {asset_id: asset.asset_id.clone()}}>
                     <div class="container">
-                    <div> {utxo_rgb.utxo.outpoint.txid.clone()} </div>
-                    //<div> {asset.ticker.clone()} {"("} {asset.name.clone()} {")"}</div>
-                    //<div> {spendable / 10f64.powi(asset.precision as i32)} </div>
-                    </div>
-                    //</Link<Route>>
+                        <div class="list-group-item list-group-item-action flex-column align-items-start">
+                            <div class="d-flex w-100 justify-content-between">
+                                <a class="mb-1 truncate" href={"https://mempool.space/testnet/tx/".to_owned() + &utxo_rgb.utxo.outpoint.txid.clone() + "#vout=" + &utxo_rgb.utxo.outpoint.vout.clone().to_string()} target="_blank">{utxo_rgb.utxo.outpoint.txid.clone()}</a>
+                                <p class="mb-1">{utxo_rgb.utxo.btc_amount.clone()}{" sat"}</p>
+                            </div>
+                            <div class="d-flex w-100 justify-content-between">
+                                if !utxo_rgb.rgb_allocations.is_empty() {
+                                    <div class="mb-1 truncate">{utxo_rgb.rgb_allocations[0].asset_id.clone()}</div>
+                                    <div class="mb-1">{utxo_rgb.rgb_allocations[0].amount.clone()}</div>
+                                } else {
+                                    <div class="mb-1 truncate">{""}</div>
+                                    <div class="mb-1">{""}</div>
+                                }
+                            </div>
+                        </div>
+                   </div>
                 }
             })
             .collect::<Html>()
@@ -147,19 +156,22 @@ pub fn utxo_list(_props: &UtxosListProps) -> Html {
     html! {
         <>
             <div>
-                {"UTXO List"}
-                {onload}
-            </div>
-            <div>
                 if *new_utxo {
                     <MatCircularProgress indeterminate=true />
                 } else {
+                    <h5 class="mb-2">
+                        {"Create new UTXOs for allocation"}
+                    </h5>
                     <div class="col-4" onclick={onclick}>
-                        <MatButton label="Create new UTXOs" raised=true/>
+                        <MatButton label="Create" raised=true/>
                     </div>
                 }
             </div>
             <p class="message">{(*message).to_string()}</p>
+            <div>
+                {"UTXO List"}
+                {onload}
+            </div>
         </>
     }
 }

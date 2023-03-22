@@ -87,7 +87,7 @@ pub fn btc_balance_panel(_props: &BtcBalancePanelProps) -> Html {
             <h2 style="text-align: center">{"0 SAT"}</h2>
             <div class="row justify-content-evenly">
                 <div class="col-4">
-                    <MatButton label="Send" icon={AttrValue::from("code")} raised=true/>
+                    <MatButton label="Send" icon={AttrValue::from("code")} raised=true disabled=true />
                 </div>
                 <div class="col-4" onclick={onclick}>
                     <MatButton label="Receive" icon={AttrValue::from("code")} raised=true/>
