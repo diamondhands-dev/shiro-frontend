@@ -85,14 +85,10 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
                                         ticker.set(rgb20.ticker.clone());
                                         let spendable =
                                             rgb20.balance.spendable.parse::<f64>().unwrap();
-                                        let settled = rgb20.balance.settled.parse::<f64>().unwrap();
                                         let future = rgb20.balance.future.parse::<f64>().unwrap();
                                         precision.set(rgb20.precision as i32);
                                         let precision = rgb20.precision;
-                                        total_balance.set(
-                                            (spendable + settled + future)
-                                                / 10f64.powi(precision as i32),
-                                        );
+                                        total_balance.set((future) / 10f64.powi(precision as i32));
                                         spendable_balance
                                             .set(spendable / 10f64.powi(precision as i32));
                                         return;

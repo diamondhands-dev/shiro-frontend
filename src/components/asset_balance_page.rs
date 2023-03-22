@@ -127,16 +127,10 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                                         //asset_id.set(rgb20.asset_id.clone());
                                         name.set(rgb20.name.clone());
                                         ticker.set(rgb20.ticker.clone());
-                                        let spendable =
-                                            rgb20.balance.spendable.parse::<f64>().unwrap();
-                                        let settled = rgb20.balance.settled.parse::<f64>().unwrap();
                                         let future = rgb20.balance.future.parse::<f64>().unwrap();
                                         precision.set(rgb20.precision as i32);
                                         let precision = rgb20.precision;
-                                        total_balance.set(
-                                            (spendable + settled + future)
-                                                / 10f64.powi(precision as i32),
-                                        );
+                                        total_balance.set((future) / 10f64.powi(precision as i32));
                                         //return;
                                     }
                                 }
@@ -201,25 +195,34 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
            //<div class="list-group">
            {
                (*transfer_list).iter().enumerate().map(|(_,transfer)| {
-                   //let spendable = asset.balance.spendable.clone().parse::<f64>().unwrap();
+                   // x conf is needed to be settled, otherwise the status stays `WaitingConfirmations`
+                   // FIXME  `transfer.expiration`
                    html! {
                        if !(transfer.status == "WaitingCounterparty" && transfer.expiration.clone()
                            .unwrap_or_else(|| "1".to_string())
                            .parse::<u128>()
-                           .unwrap() < 1678775312) {
+                           .unwrap() < 1678775312 || transfer.amount.clone().parse::<f64>().unwrap() == 0.0) {
                            <div class="list-group-item list-group-item-action flex-column align-items-start">
                                <div class="d-flex w-100 justify-content-between">
 
                                    if transfer.kind == "receive" {
                                        <h5 class="mb-1">{"+"}{transfer.amount.clone()}</h5>
+
                                    } else if transfer.kind == "send" {
                                        <h5 class="mb-1">{"-"}{transfer.amount.clone()}</h5>
+
                                    } else if transfer.kind == "issuance" {
                                        <h5 class="mb-1">{"+"}{transfer.amount.clone()}</h5>
                                    }
                                    //<small>{spendable / 10f64.powi(asset.precision as i32)}</small>
+                                </div>
+                                <div class="d-flex w-100 justify-content-between">
+                                    <p class="mb-1">{transfer.status.clone()}</p>
+                                    if transfer.txid.clone().unwrap_or_default() != "" {
+                                        <a class="mb-1 truncate" href={"https://mempool.space/testnet/tx/".to_owned() + &transfer.txid.clone().unwrap_or_default()} target="_blank">{transfer.txid.clone().unwrap_or_default()}</a>
+                                    }
+
                                </div>
-                               <p class="mb-1 truncate">{transfer.status.clone()}</p>
                            </div>
                        }
                    }}).collect::<Html>()
@@ -231,21 +234,23 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
     html! {
         <>
         <div class="container">
-            <h1>{(*name).clone()}</h1>
-            <div>{"Total Balance"}</div>
-            <h2>{*total_balance.clone()} {" "} {(*ticker).clone()}</h2>
+            <div class="text-center">
+                <h1>{(*name).clone()}</h1>
+                <div>{"Total Balance"}</div>
+                <h2>{*total_balance.clone()} {" "} {(*ticker).clone()}</h2>
+            </div>
             <div class="row justify-content-evenly">
                 <div class="container border asset_id">
                     <div>{"Asset ID"}</div>
                     <div>{prop.asset_id.clone()}</div>
                 </div>
-                <div class="container">
+                <div class="m-4">
                     <div class="row justify-content-evenly">
                         <div class="col-4">
                             <ReceiveButton label="Receive" asset_id={prop.asset_id.clone()}/>
                         </div>
                         <div class="col-4">
-                            <SendButton label="Send" asset_id={prop.asset_id.clone()}/>
+                            <SendButton label="Send  " asset_id={prop.asset_id.clone()}/>
                         </div>
                     </div>
                 </div>
