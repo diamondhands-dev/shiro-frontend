@@ -126,13 +126,13 @@ pub fn page(_props: &BalancePageProps) -> Html {
                 <div class="list-group">
                 {
                     (*fungible_list).iter().enumerate().map(|(_,asset)| {
-                        let spendable = asset.balance.spendable.clone().parse::<f64>().unwrap();
+                        let future = asset.balance.future.clone().parse::<f64>().unwrap();
                         html! {
                             <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
                             <Link<Route> to={Route::AssetBalance {asset_id: asset.asset_id.clone()}}>
                             <div class="d-flex w-100 justify-content-between">
                             <h5 class="mb-1">{asset.name.clone()}</h5>
-                            <small>{spendable / 10f64.powi(asset.precision as i32)}</small>
+                            <small>{future / 10f64.powi(asset.precision as i32)}</small>
                             </div>
                             <p class="mb-1 truncate">{asset.asset_id.clone()}</p>
                             </Link<Route>>
@@ -146,13 +146,13 @@ pub fn page(_props: &BalancePageProps) -> Html {
                 <>
                 {
                     (*nft_list).iter().enumerate().map(|(_,asset)| {
-                        let spendable = asset.balance.spendable.clone().parse::<f64>().unwrap();
+                        let future = asset.balance.future.clone().parse::<f64>().unwrap();
                         html! {
                             // FIXME
                             <div class="container">
                                 //<div>{asset.asset_id.clone()}</div>
                                 <div>{asset.name.clone()}</div>
-                                <div>{spendable / 10f64.powi(asset.precision as i32)}</div>
+                                <div>{future / 10f64.powi(asset.precision as i32)}</div>
                                 <div> {match asset.description.clone() {
                                     Some(description) => description,
                                     None => "".to_string(),

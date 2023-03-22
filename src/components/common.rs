@@ -1,4 +1,4 @@
-use material_yew::MatButton;
+use material_yew::{MatButton, MatCircularProgress};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
@@ -19,27 +19,45 @@ struct RefreshFilter {
 
 #[function_component(RefreshButton)]
 pub fn refresh_button() -> Html {
-    let onclick = Callback::from(move |_: MouseEvent| {
-        spawn_local(async {
-            match reqwest::Client::new()
-                //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/refresh")
-                .post(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/refresh")
-                .json(&RefreshParams {
-                    asset_id: None,
-                    filter: Vec::<RefreshFilter>::new(),
-                })
-                .send()
-                .await
-            {
-                Ok(result) => log::info!("{:?}", result),
-                Err(e) => log::error!("{:#?}", e),
-            };
-        });
-    });
+    let refresh = use_state(|| false);
+    let onclick = {
+        let refresh = refresh.clone();
+        Callback::from(move |_: MouseEvent| {
+            let refresh = refresh.clone();
+            spawn_local(async move {
+                refresh.set(true);
+                match reqwest::Client::new()
+                    //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/refresh")
+                    .post(
+                        API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/refresh",
+                    )
+                    .json(&RefreshParams {
+                        asset_id: None,
+                        filter: Vec::<RefreshFilter>::new(),
+                    })
+                    .send()
+                    .await
+                {
+                    Ok(result) => {
+                        log::info!("{:?}", result);
+                        refresh.set(false);
+                    }
+                    Err(e) => {
+                        log::error!("{:#?}", e);
+                        refresh.set(false);
+                    }
+                };
+            });
+        })
+    };
 
     html! {
-        <div {onclick}>
-            <MatButton label={"Refresh"} />
-        </div>
+        if *refresh {
+            <MatCircularProgress indeterminate=true />
+        } else {
+            <div {onclick}>
+                <MatButton label={"Refresh"} />
+            </div>
+        }
     }
 }
