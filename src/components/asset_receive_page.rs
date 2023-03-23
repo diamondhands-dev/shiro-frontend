@@ -86,16 +86,19 @@ pub fn asset_receive_page(props: &AssetReceivePageInnerProp) -> Html {
                     .send()
                     .await;
                 match res {
-                    Ok(res) => match res.json::<BlindData>().await {
-                        Ok(json) => {
-                            invoice.set(json.invoice);
-                            blinded_utxo.set(json.blinded_utxo);
+                    Ok(res) => {
+                        let res_text = res.text().await.unwrap();
+                        match serde_json::from_str::<BlindData>(&res_text) {
+                            Ok(json) => {
+                                invoice.set(json.invoice);
+                                blinded_utxo.set(json.blinded_utxo);
+                            }
+                            Err(e) => {
+                                log::error!("{:?}", e);
+                                message.set(res_text);
+                            }
                         }
-                        Err(e) => {
-                            log::error!("{:?}", e);
-                            message.set(e.to_string());
-                        }
-                    },
+                    }
                     Err(e) => {
                         log::error!("{:?}", e);
                         message.set(e.to_string());
