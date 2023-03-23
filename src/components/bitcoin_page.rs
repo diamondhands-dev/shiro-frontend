@@ -61,14 +61,15 @@ pub fn btc_balance_panel(_props: &BtcBalancePanelProps) -> Html {
                 match res {
                     Ok(res) => {
                         log::info!("{:#?}", res);
-                        match res.json::<AddressData>().await {
+                        let res_text = res.text().await.unwrap();
+                        match serde_json::from_str::<AddressData>(&res_text) {
                             Ok(json) => {
                                 address.set(json.new_address);
                                 new_address.set(true);
                             }
                             Err(e) => {
                                 log::error!("{:?}", e);
-                                message.set(e.to_string());
+                                message.set(res_text);
                             }
                         }
                     }
@@ -83,8 +84,8 @@ pub fn btc_balance_panel(_props: &BtcBalancePanelProps) -> Html {
     html! {
         <div class="container">
             <h1 style="text-align: center">{"Bitcoin"}</h1>
-            <div style="text-align: center">{"Your Balance"}</div>
-            <h2 style="text-align: center">{"0 SAT"}</h2>
+            //<div style="text-align: center">{"Your Balance"}</div>
+            //<h2 style="text-align: center">{"0 SAT"}</h2>
             <div class="row justify-content-evenly">
                 <div class="col-4">
                     <MatButton label="Send" icon={AttrValue::from("code")} raised=true disabled=true />
