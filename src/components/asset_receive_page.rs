@@ -1,4 +1,4 @@
-use material_yew::MatTextField;
+use material_yew::{MatCircularProgress, MatTextField};
 use qrcode::render::svg;
 use qrcode::{EcLevel, QrCode, Version};
 use serde::{Deserialize, Serialize};
@@ -50,12 +50,15 @@ pub struct AssetReceivePageInnerProp {
 
 #[function_component(AssetReceivePageInner)]
 pub fn asset_receive_page(props: &AssetReceivePageInnerProp) -> Html {
+    let message = use_state(|| "".to_string());
     let invoice = use_state(|| "".to_string());
     let blinded_utxo = use_state(|| "".to_string());
-    // FIXME: Multiple HTTP requests are called due to the state change by use_state.
-    let count = use_mut_ref(|| 0);
+    let counter = use_state(|| 0);
+    let loading = use_state(|| false);
 
-    let onload = {
+    let _onload = {
+        let loading = loading.clone();
+        let message = message.clone();
         let invoice = invoice.clone();
         let blinded_utxo = blinded_utxo.clone();
         let asset_id = if props.asset_id.starts_with('_') {
@@ -63,66 +66,65 @@ pub fn asset_receive_page(props: &AssetReceivePageInnerProp) -> Html {
         } else {
             Some(props.asset_id.clone())
         };
-        spawn_local(async move {
-            let blind_params = BlindParams {
-                asset_id,
-                amount: None,
-                duration_seconds: Some(3600), // 1hour
-                consignment_endpoints: vec![
-                    "rgbhttpjsonrpc:http://proxy.rgbtools.org/json-rpc".to_string()
-                ],
-            };
-            let client = reqwest::Client::new();
-            let res = client
-                //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/blind")
-                .put(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/blind")
-                .json(&blind_params)
-                .send()
-                .await;
-            match res {
-                Ok(res) => match res.json::<BlindData>().await {
-                    Ok(json) => {
-                        log::info!("1: {:#?}", (*count.borrow_mut()).to_string());
-                        *count.borrow_mut() += 1;
-                        if *count.borrow_mut() < 2 {
+        if *counter == 0 {
+            spawn_local(async move {
+                counter.set(*counter + 1);
+                loading.set(true);
+                let blind_params = BlindParams {
+                    asset_id,
+                    amount: None,
+                    duration_seconds: Some(3600), // 1hour
+                    consignment_endpoints: vec![
+                        "rgbhttpjsonrpc:http://proxy.rgbtools.org/json-rpc".to_string(),
+                    ],
+                };
+                let client = reqwest::Client::new();
+                let res = client
+                    //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/blind")
+                    .put(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/blind")
+                    .json(&blind_params)
+                    .send()
+                    .await;
+                match res {
+                    Ok(res) => match res.json::<BlindData>().await {
+                        Ok(json) => {
                             invoice.set(json.invoice);
                             blinded_utxo.set(json.blinded_utxo);
-                        } else {
                         }
-                    }
+                        Err(e) => {
+                            log::error!("{:?}", e);
+                            message.set(e.to_string());
+                        }
+                    },
                     Err(e) => {
                         log::error!("{:?}", e);
+                        message.set(e.to_string());
                     }
-                },
-                Err(e) => {
-                    log::error!("{:?}", e);
                 }
-            }
-        });
-        html! { <></> }
+                log::info!("counter {:?}", counter);
+                loading.set(false);
+            });
+            //html! { <></> }
+        }
     };
 
-    //let onclick = Callback::from(|_| {});
     html! {
         <>
-        <div class="container">
             <h1 style="text-align: center">{"Receive"}</h1>
-            <QrCodeView invoice={(*invoice).clone()} />
-            <div style="text-align: center" id="qrcode"/>
-        </div>
-        <div class="container">
-            <h3>{"Invoice"}</h3>
-            <MatTextField outlined=true label="blinded UTXO" value={(*blinded_utxo).clone()}/>
-            <div>{"The blinded UTXO in this invoice will expire in 1 hours after its creation and will be valid only for this asset"}</div>
-        </div>
-        /*
-        <div class="container">
-            <div onclick={onclick}>
-                <MatButton label="COPY" raised=true />
-            </div>
-        </div>
-        */
-        {onload}
+            if !*loading && message.is_empty() {
+                <QrCodeView invoice={(*invoice).clone()} />
+                <div style="text-align: center" id="qrcode"/>
+                <h3>{"Invoice"}</h3>
+                <MatTextField outlined=true label="blinded UTXO" value={(*blinded_utxo).clone()}/>
+                <div>{"The blinded UTXO in this invoice will expire in 1 hours after its creation and will be valid only for this asset"}</div>
+                //{onload}
+            } else if !message.is_empty() {
+                <p class="message">{(*message).to_string()}</p>
+            } else {
+                <div>
+                    <MatCircularProgress indeterminate=true />
+                </div>
+            }
         </>
     }
 }
