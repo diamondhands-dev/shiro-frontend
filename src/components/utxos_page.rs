@@ -48,6 +48,11 @@ pub struct UtxosParams {
     fee_rate: f32,
 }
 
+#[derive(Serialize, Deserialize, PartialEq)]
+pub struct UtxosResult {
+    created_utxos: u8,
+}
+
 #[derive(Properties, PartialEq)]
 pub struct UtxosListProps {}
 
@@ -80,14 +85,14 @@ pub fn utxo_list(_props: &UtxosListProps) -> Html {
                 new_utxo.set(false);
                 match res {
                     Ok(res) => {
-                        log::info!("{:#?}", res);
-                        match res.text().await {
-                            Ok(text) => {
-                                message.set(text);
+                        let res_text = res.text().await.unwrap();
+                        match serde_json::from_str::<UtxosResult>(&res_text) {
+                            Ok(json) => {
+                                message.set(json.created_utxos.to_string());
                             }
                             Err(e) => {
                                 log::error!("{:?}", e);
-                                message.set(e.to_string());
+                                message.set(res_text);
                             }
                         }
                     }
@@ -100,6 +105,7 @@ pub fn utxo_list(_props: &UtxosListProps) -> Html {
     };
 
     let onload = {
+        let message = message.clone();
         let unspents = UnspentsParams { settled_only: true };
         let client = reqwest::Client::new();
         let u_list = utxo_list.clone();
@@ -110,14 +116,18 @@ pub fn utxo_list(_props: &UtxosListProps) -> Html {
                 .send()
                 .await;
             match res {
-                Ok(res) => match res.json::<UnspentsResult>().await {
-                    Ok(json) => {
-                        u_list.set(json.unspents);
+                Ok(res) => {
+                    let res_text = res.text().await.unwrap();
+                    match serde_json::from_str::<UnspentsResult>(&res_text) {
+                        Ok(json) => {
+                            u_list.set(json.unspents);
+                        }
+                        Err(e) => {
+                            log::error!("{:?}", e);
+                            message.set(res_text);
+                        }
                     }
-                    Err(e) => {
-                        log::error!("{:?}", e);
-                    }
-                },
+                }
                 Err(e) => {
                     log::error!("{:?}", e);
                 }

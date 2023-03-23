@@ -78,6 +78,7 @@ pub struct BalancePageProps {}
 
 #[function_component(BalancePageInner)]
 pub fn page(_props: &BalancePageProps) -> Html {
+    let message = use_state(|| "".to_string());
     let tab = use_state(|| Tabs::Fungible);
     let fungible_list = use_state_eq(Vec::<AssetRgb20>::new);
     let nft_list = use_state_eq(Vec::<AssetRgb121>::new);
@@ -92,6 +93,7 @@ pub fn page(_props: &BalancePageProps) -> Html {
     };
 
     let content = {
+        let message = message.clone();
         let client = reqwest::Client::new();
         let f_list = fungible_list.clone();
         let n_list = nft_list.clone();
@@ -105,16 +107,21 @@ pub fn page(_props: &BalancePageProps) -> Html {
                 .send()
                 .await;
             match res {
-                Ok(res) => match res.json::<AssetsResult>().await {
-                    Ok(json) => {
-                        f_list.set(json.assets.rgb20);
-                        n_list.set(json.assets.rgb121);
-                        log::info!("Got assets");
+                Ok(res) => {
+                    let res_text = res.text().await.unwrap();
+                    match serde_json::from_str::<AssetsResult>(&res_text) {
+                        //match res.json::<AssetsResult>().await {
+                        Ok(json) => {
+                            f_list.set(json.assets.rgb20);
+                            n_list.set(json.assets.rgb121);
+                            log::info!("Got assets");
+                        }
+                        Err(e) => {
+                            log::error!("{:?}", e);
+                            message.set(res_text)
+                        }
                     }
-                    Err(e) => {
-                        log::error!("{:?}", e);
-                    }
-                },
+                }
                 Err(e) => {
                     log::error!("{:?}", e);
                 }
@@ -172,8 +179,14 @@ pub fn page(_props: &BalancePageProps) -> Html {
                 <MatTab icon="image" label="NFT" />
             </MatTabBar>
             {content}
-            <ReceiveButton label={"RECEIVE ASSETS"} asset_id={"_"}/>
+
+            <div class="mt-4 d-grid gap-2 col-5 mx-auto">
+                <ReceiveButton label={"RECEIVE ASSETS"} asset_id={"_"}/>
+            </div>
+
             <RefreshButton/>
+
+            <p class="message">{(*message).to_string()}</p>
         </>
     }
 }
