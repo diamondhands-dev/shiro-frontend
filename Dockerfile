@@ -7,8 +7,10 @@ RUN apt-get update \
  && rustup target add wasm32-unknown-unknown
 
 FROM buildbase AS build
+ARG API_ROOT=http://localhost:3000
+
 WORKDIR /usr/src/myapp
 COPY . .
 
-EXPOSE 3000
-ENTRYPOINT ["trunk", "serve", "--port=3000"]
+ENV API_ROOT=${API_ROOT}
+ENTRYPOINT ["trunk", "serve", "--port=3000", "--release", "--address", "0.0.0.0"]
