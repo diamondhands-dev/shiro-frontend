@@ -1,16 +1,11 @@
-FROM rust:1.66-slim-bullseye AS buildbase
+FROM rust:1.68-slim-bullseye as builder
 
 RUN apt-get update \
- && apt-get install -y libcrypt1-dev libssl-dev clang pkg-config git \
- && rm -fr /var/lib/apt/lists/* \
- && cargo install trunk \
- && rustup target add wasm32-unknown-unknown
+ && apt-get install clang git-core -y \
+ && rustup target add wasm32-unknown-unknown \
+ && cargo install --config net.git-fetch-with-cli=true trunk
+COPY ./ ./
+RUN trunk build
 
-FROM buildbase AS build
-ARG API_ROOT=http://localhost:3000
-
-WORKDIR /usr/src/myapp
-COPY . .
-
-ENV API_ROOT=${API_ROOT}
-ENTRYPOINT ["trunk", "serve", "--port=3000", "--release", "--address", "0.0.0.0"]
+FROM ghcr.io/diamondhands-rgb/shiro-backend:0.4
+COPY --from=builder dist/ app/
