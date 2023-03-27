@@ -50,6 +50,7 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
     let onload = {
         match *page_mode {
             PageMode::Unknown => {
+                let baseurl = web_sys::window().unwrap().origin();
                 let client = reqwest::Client::new();
                 let asset_id = asset_id.clone();
                 let ticker = ticker.clone();
@@ -58,9 +59,8 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
                 let precision = precision.clone();
                 spawn_local(async move {
                     let res = client
-                        //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/assets")
                         .put(
-                            API_ROOT.unwrap_or("http://localhost:8080").to_owned()
+                            API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned()
                                 + "/wallet/assets",
                         )
                         .json(&AssetsParams {
@@ -132,6 +132,7 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
         let fee_rate = fee_rate.clone();
         let precision = precision;
         Callback::from(move |_: MouseEvent| {
+            let baseurl = web_sys::window().unwrap().origin();
             let client = reqwest::Client::new();
             let sending = sending.clone();
             let message = message.clone();
@@ -157,8 +158,7 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
                     fee_rate: *fee_rate,
                 };
                 let res = client
-                    //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/send")
-                    .post(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/send")
+                    .post(API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned() + "/wallet/send")
                     .json(&send_params)
                     .send()
                     .await;

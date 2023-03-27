@@ -105,13 +105,14 @@ pub fn utxo_list(_props: &UtxosListProps) -> Html {
     };
 
     let onload = {
+        let baseurl = web_sys::window().unwrap().origin();
         let message = message.clone();
         let unspents = UnspentsParams { settled_only: true };
         let client = reqwest::Client::new();
         let u_list = utxo_list.clone();
         spawn_local(async move {
             let res = client
-                .put(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/unspents")
+                .put(API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned() + "/wallet/unspents")
                 .json(&unspents)
                 .send()
                 .await;

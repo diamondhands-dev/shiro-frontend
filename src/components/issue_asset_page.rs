@@ -76,6 +76,7 @@ pub fn page(_props: &IssueAssetPageProps) -> Html {
         let ticker = ticker.clone();
         let name = name.clone();
         Callback::from(move |_| {
+            let baseurl = web_sys::window().unwrap().origin();
             let new_issue = new_issue.clone();
             let message = message.clone();
 
@@ -94,9 +95,8 @@ pub fn page(_props: &IssueAssetPageProps) -> Html {
             spawn_local(async move {
                 new_issue.set(true);
                 let res = client
-                    //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/issue/rgb20")
                     .put(
-                        API_ROOT.unwrap_or("http://localhost:8080").to_owned()
+                        API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned()
                             + "/wallet/issue/rgb20",
                     )
                     .json(&asset)

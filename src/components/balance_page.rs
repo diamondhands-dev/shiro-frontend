@@ -78,6 +78,7 @@ pub struct BalancePageProps {}
 
 #[function_component(BalancePageInner)]
 pub fn page(_props: &BalancePageProps) -> Html {
+    let baseurl = web_sys::window().unwrap().origin();
     let message = use_state(|| "".to_string());
     let tab = use_state(|| Tabs::Fungible);
     let fungible_list = use_state_eq(Vec::<AssetRgb20>::new);
@@ -99,8 +100,7 @@ pub fn page(_props: &BalancePageProps) -> Html {
         let n_list = nft_list.clone();
         spawn_local(async move {
             let res = client
-                //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/assets")
-                .put(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/assets")
+                .put(API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned() + "/wallet/assets")
                 .json(&AssetsParams {
                     filter_asset_types: Vec::<AssetType>::new(),
                 })

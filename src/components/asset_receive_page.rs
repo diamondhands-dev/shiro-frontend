@@ -50,6 +50,7 @@ pub struct AssetReceivePageInnerProp {
 
 #[function_component(AssetReceivePageInner)]
 pub fn asset_receive_page(props: &AssetReceivePageInnerProp) -> Html {
+    let baseurl = web_sys::window().unwrap().origin();
     let message = use_state(|| "".to_string());
     let invoice = use_state(|| "".to_string());
     let blinded_utxo = use_state(|| "".to_string());
@@ -80,8 +81,7 @@ pub fn asset_receive_page(props: &AssetReceivePageInnerProp) -> Html {
                 };
                 let client = reqwest::Client::new();
                 let res = client
-                    //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/blind")
-                    .put(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/blind")
+                    .put(API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned() + "/wallet/blind")
                     .json(&blind_params)
                     .send()
                     .await;
