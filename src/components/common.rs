@@ -28,9 +28,7 @@ pub fn refresh_button() -> Html {
             spawn_local(async move {
                 refresh.set(true);
                 match reqwest::Client::new()
-                    .post(
-                        API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned() + "/wallet/refresh",
-                    )
+                    .post(API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned() + "/wallet/refresh")
                     .json(&RefreshParams {
                         asset_id: None,
                         filter: Vec::<RefreshFilter>::new(),

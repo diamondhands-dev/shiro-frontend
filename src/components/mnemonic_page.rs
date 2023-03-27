@@ -262,10 +262,7 @@ pub fn page(_: &PageProps) -> Html {
                         spawn_local(async move {
                             open.set(true);
                             let res = client
-                                .put(
-                                    API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned()
-                                        + "/wallet",
-                                )
+                                .put(API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned() + "/wallet")
                                 .json(&wallet)
                                 .send()
                                 .await;

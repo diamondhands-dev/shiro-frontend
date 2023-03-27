@@ -95,10 +95,7 @@ pub fn page(_props: &IssueAssetPageProps) -> Html {
             spawn_local(async move {
                 new_issue.set(true);
                 let res = client
-                    .put(
-                        API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned()
-                            + "/wallet/issue/rgb20",
-                    )
+                    .put(API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned() + "/wallet/issue/rgb20")
                     .json(&asset)
                     .send()
                     .await;

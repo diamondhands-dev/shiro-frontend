@@ -102,10 +102,7 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                 let precision = precision;
                 spawn_local(async move {
                     let res = client
-                        .put(
-                            API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned()
-                                + "/wallet/assets",
-                        )
+                        .put(API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned() + "/wallet/assets")
                         .json(&AssetsParams {
                             filter_asset_types: Vec::<AssetType>::new(),
                         })

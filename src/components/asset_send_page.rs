@@ -59,10 +59,7 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
                 let precision = precision.clone();
                 spawn_local(async move {
                     let res = client
-                        .put(
-                            API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned()
-                                + "/wallet/assets",
-                        )
+                        .put(API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned() + "/wallet/assets")
                         .json(&AssetsParams {
                             filter_asset_types: Vec::<AssetType>::new(),
                         })
