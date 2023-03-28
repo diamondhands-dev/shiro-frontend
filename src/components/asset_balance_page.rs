@@ -93,6 +93,7 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
     let content = {
         match *page_mode {
             PageMode::Unknown => {
+                let baseurl = web_sys::window().unwrap().origin();
                 let t_list = transfer_list.clone();
                 let client = reqwest::Client::new();
                 let name = name.clone();
@@ -101,11 +102,7 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                 let precision = precision;
                 spawn_local(async move {
                     let res = client
-                        //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/assets")
-                        .put(
-                            API_ROOT.unwrap_or("http://localhost:8080").to_owned()
-                                + "/wallet/assets",
-                        )
+                        .put(API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned() + "/wallet/assets")
                         .json(&AssetsParams {
                             filter_asset_types: Vec::<AssetType>::new(),
                         })

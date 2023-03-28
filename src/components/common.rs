@@ -23,14 +23,12 @@ pub fn refresh_button() -> Html {
     let onclick = {
         let refresh = refresh.clone();
         Callback::from(move |_: MouseEvent| {
+            let baseurl = web_sys::window().unwrap().origin();
             let refresh = refresh.clone();
             spawn_local(async move {
                 refresh.set(true);
                 match reqwest::Client::new()
-                    //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/refresh")
-                    .post(
-                        API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/refresh",
-                    )
+                    .post(API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned() + "/wallet/refresh")
                     .json(&RefreshParams {
                         asset_id: None,
                         filter: Vec::<RefreshFilter>::new(),

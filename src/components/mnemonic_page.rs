@@ -233,6 +233,7 @@ pub fn page(_: &PageProps) -> Html {
         let created = created.clone();
         let online = online.clone();
         Callback::from(move |_| {
+            let baseurl = web_sys::window().unwrap().origin();
             let str = words.clone().join(" ");
             let is_invalid_mnemonic = is_invalid_mnemonic.clone();
             let open = open.clone();
@@ -261,11 +262,7 @@ pub fn page(_: &PageProps) -> Html {
                         spawn_local(async move {
                             open.set(true);
                             let res = client
-                                //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet")
-                                .put(
-                                    API_ROOT.unwrap_or("http://localhost:8080").to_owned()
-                                        + "/wallet",
-                                )
+                                .put(API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned() + "/wallet")
                                 .json(&wallet)
                                 .send()
                                 .await;

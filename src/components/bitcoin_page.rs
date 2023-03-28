@@ -49,13 +49,14 @@ pub fn btc_balance_panel(_props: &BtcBalancePanelProps) -> Html {
         let address = address.clone();
         let new_address = new_address.clone();
         Callback::from(move |_: MouseEvent| {
+            let baseurl = web_sys::window().unwrap().origin();
             let message = message.clone();
             let client = reqwest::Client::new();
             let address = address.clone();
             let new_address = new_address.clone();
             spawn_local(async move {
                 let res = client
-                    .get(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/address")
+                    .get(API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned() + "/wallet/address")
                     .send()
                     .await;
                 match res {
