@@ -284,9 +284,8 @@ pub fn page(_: &PageProps) -> Html {
                             }
 
                             let res = client
-                                //.put("http://shiro.westus2.cloudapp.azure.com:4320/wallet/go_online")
                                 .put(
-                                    API_ROOT.unwrap_or("http://localhost:8080").to_owned()
+                                    API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned()
                                         + "/wallet/go_online",
                                 )
                                 .json(&go_online)
