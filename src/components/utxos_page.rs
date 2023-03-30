@@ -67,6 +67,7 @@ pub fn utxo_list(_props: &UtxosListProps) -> Html {
         let message = message.clone();
         let new_utxo = new_utxo.clone();
         Callback::from(move |_: MouseEvent| {
+            let baseurl = web_sys::window().unwrap().origin();
             let message = message.clone();
             let utxos = UtxosParams {
                 up_to: true,
@@ -78,7 +79,7 @@ pub fn utxo_list(_props: &UtxosListProps) -> Html {
             spawn_local(async move {
                 new_utxo.set(true);
                 let res = client
-                    .put(API_ROOT.unwrap_or("http://localhost:8080").to_owned() + "/wallet/utxos")
+                    .put(API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned() + "/wallet/utxos")
                     .json(&utxos)
                     .send()
                     .await;
