@@ -159,7 +159,7 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                     };
                     let res = client
                         .put(
-                            API_ROOT.unwrap_or("http://localhost:8080").to_owned()
+                            API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned()
                                 + "/wallet/transfers",
                         )
                         .json(&params)
