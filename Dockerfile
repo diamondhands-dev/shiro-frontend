@@ -7,5 +7,5 @@ RUN apt-get update \
 COPY ./ ./
 RUN trunk build
 
-FROM ghcr.io/diamondhands-rgb/shiro-backend:0.4.4
+FROM ghcr.io/diamondhands-dev/shiro-backend:0.4.4
 COPY --from=builder dist/ app/
