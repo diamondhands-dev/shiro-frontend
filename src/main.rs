@@ -5,9 +5,9 @@ use yew::prelude::*;
 use yew_router::prelude::*;
 
 use self::components::asset_balance_page::Page as AssetBalancePage;
+use self::components::asset_list_page::Page as AssetListPage;
 use self::components::asset_receive_page::Page as AssetReceivePage;
 use self::components::asset_send_page::Page as AssetSendPage;
-use self::components::asset_list_page::Page as AssetListPage;
 use self::components::bitcoin_page::Page as BitcoinPage;
 use self::components::issue_asset_page::Page as IssueAssetPage;
 use self::components::mnemonic_page::Page as MnemonicPage;
