@@ -114,7 +114,7 @@ pub fn asset_receive_page(props: &AssetReceivePageInnerProp) -> Html {
     html! {
         <>
         <div class="container text-center">
-            <h1>{"Receive"}</h1>
+
             if !*loading && message.is_empty() {
                 <QrCodeView invoice={(*invoice).clone()} />
                 <div id="qrcode"/>
