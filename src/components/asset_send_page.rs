@@ -1,4 +1,4 @@
-use super::balance_page::{AssetType, AssetsParams, AssetsResult};
+use super::asset_list_page::{AssetType, AssetsParams, AssetsResult};
 use material_yew::{MatButton, MatCircularProgress, MatTextField};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

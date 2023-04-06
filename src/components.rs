@@ -1,7 +1,7 @@
 pub mod asset_balance_page;
 pub mod asset_receive_page;
 pub mod asset_send_page;
-pub mod balance_page;
+pub mod asset_list_page;
 pub mod bitcoin_page;
 pub mod common;
 pub mod issue_asset_page;
