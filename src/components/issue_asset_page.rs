@@ -1,4 +1,4 @@
-use material_yew::{MatButton, MatCircularProgress, MatFormfield, MatTextField, text_inputs::TextFieldType};
+use material_yew::{text_inputs::TextFieldType, MatButton, MatCircularProgress, MatTextField};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
