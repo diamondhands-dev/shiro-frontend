@@ -15,7 +15,7 @@ a, u {
 
 body {
     background-color: rgb(255, 255, 255);
-    width: 480px;
+    max-width: 480px;
     margin: auto;
 }
 

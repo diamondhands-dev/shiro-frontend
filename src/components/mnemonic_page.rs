@@ -320,6 +320,7 @@ pub fn page(_: &PageProps) -> Html {
 
     html! {
         <>
+        <div class="container">
             <p>{"Fill your mnemonic word in."}</p>
 
             <MatList>
@@ -357,7 +358,7 @@ pub fn page(_: &PageProps) -> Html {
                 <ClearFormButton onclick={onclick_clear_form_button}/>
                 <RevertFormButton onclick={onclick_revert_form_button}/>
             </div>
-
+        </div>
         </>
     }
 }
