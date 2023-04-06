@@ -113,12 +113,19 @@ pub fn asset_receive_page(props: &AssetReceivePageInnerProp) -> Html {
 
     html! {
         <>
-            <h1 style="text-align: center">{"Receive"}</h1>
+        <div class="container text-center">
+
             if !*loading && message.is_empty() {
                 <QrCodeView invoice={(*invoice).clone()} />
-                <div style="text-align: center" id="qrcode"/>
-                <h3>{"Invoice"}</h3>
-                <MatTextField outlined=true label="blinded UTXO" value={(*blinded_utxo).clone()}/>
+                <div id="qrcode"/>
+                <div class="d-flex flex-column bd-highlight mb-3">
+                    <div class="p-2">
+                        <MatTextField outlined=true label="invoice" value={(*invoice).clone()}/>
+                    </div>
+                    <div class="p-2">
+                        <MatTextField outlined=true label="blinded UTXO" value={(*blinded_utxo).clone()}/>
+                    </div>
+                </div>
                 <div>{"The blinded UTXO in this invoice will expire in 1 hours after its creation and will be valid only for this asset"}</div>
                 //{onload}
             } else if !message.is_empty() {
@@ -128,6 +135,7 @@ pub fn asset_receive_page(props: &AssetReceivePageInnerProp) -> Html {
                     <MatCircularProgress indeterminate=true />
                 </div>
             }
+        </div>
         </>
     }
 }

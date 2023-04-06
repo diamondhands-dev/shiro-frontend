@@ -167,22 +167,27 @@ pub fn utxo_list(_props: &UtxosListProps) -> Html {
 
     html! {
         <>
-            <div>
+            <div class="container text-center">
                 if *new_utxo {
                     <MatCircularProgress indeterminate=true />
                 } else {
-                    <h5 class="mb-2">
-                        {"Create new UTXOs for allocation"}
-                    </h5>
-                    <div class="col-4" onclick={onclick}>
+                    <div>
+                        <p class="mb-2">
+                            {"Create new UTXOs for allocation"}
+                        </p>
+                    </div>
+                    <div onclick={onclick}>
                         <MatButton label="Create" raised=true/>
                     </div>
                 }
-            </div>
-            <p class="message">{(*message).to_string()}</p>
-            <div>
-                {"UTXO List"}
-                {onload}
+
+                <p class="message">{(*message).to_string()}</p>
+
+                <div>
+                    {"UTXO List"}
+                    {onload}
+                </div>
+
             </div>
         </>
     }

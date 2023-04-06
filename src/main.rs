@@ -7,7 +7,7 @@ use yew_router::prelude::*;
 use self::components::asset_balance_page::Page as AssetBalancePage;
 use self::components::asset_receive_page::Page as AssetReceivePage;
 use self::components::asset_send_page::Page as AssetSendPage;
-use self::components::balance_page::Page as BalancePage;
+use self::components::asset_list_page::Page as AssetListPage;
 use self::components::bitcoin_page::Page as BitcoinPage;
 use self::components::issue_asset_page::Page as IssueAssetPage;
 use self::components::mnemonic_page::Page as MnemonicPage;
@@ -80,12 +80,12 @@ fn asset_send_page(prop: &AssetSendPageRouteProp) -> Html {
     }
 }
 
-#[function_component(BalancePageRoute)]
-fn balance_page() -> Html {
+#[function_component(AssetListPageRoute)]
+fn asset_list() -> Html {
     html! {
         <>
             {inject_navbar()}
-            <BalancePage/>
+            <AssetListPage/>
         </>
     }
 }
@@ -132,7 +132,7 @@ fn utxos_page() -> Html {
 
 fn switch(routes: &Route) -> Html {
     match routes {
-        Route::Balance => html!( <BalancePageRoute/> ),
+        Route::Balance => html!( <AssetListPageRoute/> ),
         Route::Bitcoin => html!( <BitcoinPageRoute/> ),
         Route::IssueAsset => html!( <IssueAssetPageRoute/> ),
         Route::Mnemonic => html!( <MnemonicPageRoute/> ),
@@ -153,7 +153,7 @@ fn inject_navbar() -> Html {
     html! {
                 <nav class="navbar navbar-expand-lg">
                     <div class="container">
-                        <a class="navbar-brand" href="/balance">{"Shiro-wallet"}</a>
+                        <a class="navbar-brand" href="./balance">{"Shiro-wallet"}</a>
                         <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#n_bar" aria-controls="navbarNavAltMarkup" aria-label="Toggle navigation">
                             <MatIcon>{"menu"}</MatIcon>
                         </button>

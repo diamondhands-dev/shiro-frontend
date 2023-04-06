@@ -83,10 +83,10 @@ pub fn btc_balance_panel(_props: &BtcBalancePanelProps) -> Html {
     };
 
     html! {
-        <div class="container">
-            <h1 style="text-align: center">{"Bitcoin"}</h1>
-            //<div style="text-align: center">{"Your Balance"}</div>
-            //<h2 style="text-align: center">{"0 SAT"}</h2>
+        <div class="container text-center">
+            <h1>{"Bitcoin"}</h1>
+            //<div>{"Your Balance"}</div>
+            //<h2>{"0 SAT"}</h2>
             <div class="row justify-content-evenly">
                 <div class="col-4">
                     <MatButton label="Send" icon={AttrValue::from("code")} raised=true disabled=true />
@@ -94,11 +94,11 @@ pub fn btc_balance_panel(_props: &BtcBalancePanelProps) -> Html {
                 <div class="col-4" onclick={onclick}>
                     <MatButton label="Receive" icon={AttrValue::from("code")} raised=true/>
                 </div>
-            </div>
-            //<div class="row col-1">
-            //    <h2 class="col">{"Transactions"}</h2>
-            //</div>
-            <div>
+
+                //<div class="row col-1">
+                //    <h2 class="col">{"Transactions"}</h2>
+                //</div>
+
                 if *new_address {
                     <QrCodeView address={(*address).clone()} />
                     <MatTextField outlined=true label="Bitcoin address" value={(*address).clone()}/>
@@ -106,6 +106,11 @@ pub fn btc_balance_panel(_props: &BtcBalancePanelProps) -> Html {
             </div>
 
             <p class="message">{(*message).to_string()}</p>
+
+            <div>
+            <a class="mb-1" href="https://bitcoinfaucet.uo1.net/" target="_blank">{"Bitcoin faucet"}</a>
+            </div>
+
         </div>
     }
 }

@@ -1,4 +1,4 @@
-use material_yew::{MatButton, MatCircularProgress, MatTextField};
+use material_yew::{MatButton, MatCircularProgress, MatFormfield, MatTextField, text_inputs::TextFieldType};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
@@ -122,16 +122,15 @@ pub fn page(_props: &IssueAssetPageProps) -> Html {
     };
 
     html! {
-        <div class="container">
-
+        <div class="container text-center">
             <h3>{"Asset ticker"}</h3>
             <MatTextField outlined=true label="short identifier" value={(*ticker).clone()} oninput={oninput_ticker}/>
             <h3>{"Asset name"}</h3>
             <MatTextField outlined=true label="name of the asset" value={(*name).clone()} oninput={oninput_name}/>
             <h3>{"Total supply"}</h3>
-            <MatTextField outlined=true label="amount to issue" value={(*amount).clone()} oninput={oninput_amount}/>
+            <MatTextField outlined=true label="amount to issue" field_type={TextFieldType::Number} value={(*amount).clone()} oninput={oninput_amount}/>
 
-            <div class="row">
+            <div class="row m-4">
                 <div class="col-12">
                 if *new_issue {
                     <MatCircularProgress indeterminate=true />
@@ -140,7 +139,6 @@ pub fn page(_props: &IssueAssetPageProps) -> Html {
                 }
                 </div>
             </div>
-
 
             <p class="message">{(*message).to_string()}</p>
         </div>

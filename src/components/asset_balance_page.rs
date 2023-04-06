@@ -1,4 +1,4 @@
-use super::balance_page::{AssetType, AssetsParams, AssetsResult};
+use super::asset_list_page::{AssetType, AssetsParams, AssetsResult};
 use super::common::RefreshButton;
 use super::utxos_page::Outpoint;
 use material_yew::MatButton;

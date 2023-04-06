@@ -1,4 +1,4 @@
-use super::balance_page::{AssetType, AssetsParams, AssetsResult};
+use super::asset_list_page::{AssetType, AssetsParams, AssetsResult};
 use material_yew::{MatButton, MatCircularProgress, MatTextField};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -213,22 +213,23 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
 
     html! {
         <>
-        <div class="container">
-            <h1 style="text-align: center">{"Send"}</h1>
-            <div style="text-align: center">{"Total Balence"}</div>
-            <h2 style="text-align: center">{*total_balance} {" "} {(*ticker).clone()}</h2>
-            <div style="text-align: center">{"Spendable Balence"}</div>
-            <h2 style="text-align: center">{*spendable_balance} {" "} {(*ticker).clone()}</h2>
-        </div>
-        <div class="container">
-            <h3>{"Pay to"}</h3>
+        <div class="container text-center">
+
+            <div>{"Total Balence"}</div>
+            <h3>{*total_balance} {" "} {(*ticker).clone()}</h3>
+            <div>{"Spendable Balence"}</div>
+            <h3>{*spendable_balance} {" "} {(*ticker).clone()}</h3>
+
+        <div>
+            <h5>{"Pay to"}</h5>
             <MatTextField outlined=true label="blinded UTXO" value={(*pay_to).clone()} oninput={oninput_pay_to}/>
-            <h3>{"Amount to pay"}</h3>
+            <h5>{"Amount to pay"}</h5>
             <MatTextField outlined=true label="0" value={(*amount_to_pay).clone().to_string()} oninput={oninput_amount_to_pay}/>
-            <h3>{"Fee rate in sat/vbyte"}</h3>
+            <h5>{"Fee rate in sat/vbyte"}</h5>
             <MatTextField outlined=true label="1.5" value={(*fee_rate).clone().to_string()} oninput={oninput_fee_rate}/>
         </div>
-        <div class="container">
+
+        <div class="m-3">
             if *sending {
                 <MatCircularProgress indeterminate=true />
             } else {
@@ -238,7 +239,10 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
             }
             <p class="message">{(*message).to_string()}</p>
         </div>
+
         {onload}
+
+        </div>
         </>
     }
 }
