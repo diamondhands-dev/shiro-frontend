@@ -10,10 +10,10 @@ The wallet UI for the RGB assets (that is defined by LNP/BP)
 # How to run
 
 ## Docker
-You shall specify {API_ROOT}. 
 ```
-docker run -dp 3000:3000 -e API_ROOT={http:localhost:8080} ghcr.io/diamondhands-dev/shiro-frontend:latest
+docker run ghcr.io/diamondhands-dev/shiro-frontend:latest
 ```
+This docker comes with shiro-backend. Access to [localhost:8080](http://localhost:8080)
 
 ## From sources
 ```
