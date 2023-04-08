@@ -16,6 +16,15 @@ pub struct WalletResult {
     pub pubkey: String,
 }
 
+#[derive(Deserialize, Serialize)]
+pub struct WalletData {
+    pub data_dir: String,
+    pub bitcoin_network: String,
+    pub database_type: String,
+    pub pubkey: String,
+    pub mnemonic: String,
+}
+
 #[derive(Properties, PartialEq)]
 pub struct MnemonicWordProp {
     pub label: String,
@@ -155,6 +164,7 @@ pub struct PageProps {}
 
 #[function_component(MnemonicPageInner)]
 pub fn page(_: &PageProps) -> Html {
+    let wallet_id = use_state(|| "".to_string());
     let open = use_state(|| false);
     let created = use_state(|| false);
     let online = use_state(|| false);
@@ -232,6 +242,7 @@ pub fn page(_: &PageProps) -> Html {
         let open = open.clone();
         let created = created.clone();
         let online = online.clone();
+        let wallet_id = wallet_id.clone();
         Callback::from(move |_| {
             let baseurl = web_sys::window().unwrap().origin();
             let str = words.clone().join(" ");
@@ -239,6 +250,7 @@ pub fn page(_: &PageProps) -> Html {
             let open = open.clone();
             let created = created.clone();
             let online = online.clone();
+            let wallet_id = wallet_id.clone();
             match Mnemonic::parse(&str) {
                 Ok(mnemonic) => {
                     let xkey: ExtendedKey = mnemonic
@@ -261,6 +273,7 @@ pub fn page(_: &PageProps) -> Html {
                         let client = reqwest::Client::new();
                         spawn_local(async move {
                             open.set(true);
+                            // Create wallet
                             let res = client
                                 .put(API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned() + "/wallet")
                                 .json(&wallet)
@@ -283,6 +296,7 @@ pub fn page(_: &PageProps) -> Html {
                                 }
                             }
 
+                            // Go online
                             let res = client
                                 .put(
                                     API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned()
@@ -309,6 +323,30 @@ pub fn page(_: &PageProps) -> Html {
                                 }
                             }
                             open.set(false);
+
+                            // Get wallet data
+                            let res = client
+                                .get(
+                                    API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned()
+                                        + "/wallet/data",
+                                )
+                                .send()
+                                .await;
+                            log::info!("{:#?}", res);
+                            match res {
+                                Ok(res) => match res.json::<WalletData>().await {
+                                    Ok(json) => {
+                                        log::info!("wallet/data {:#?}", json.pubkey);
+                                        wallet_id.set(json.pubkey);
+                                    }
+                                    Err(e) => {
+                                        log::error!("{:?}", e);
+                                    }
+                                },
+                                Err(e) => {
+                                    log::error!("{:#?}", e);
+                                }
+                            }
                         });
                     }
                 }
@@ -351,6 +389,13 @@ pub fn page(_: &PageProps) -> Html {
                 } else {
                     <MatIcon>{"block"}</MatIcon>
                 }
+            </div>
+
+            <div class="box">
+                <div class="container border asset_id">
+                    <div>{"Wallet ID"}</div>
+                    <div>{(*wallet_id).clone()}</div>
+                </div>
             </div>
 
             <div class="box">
