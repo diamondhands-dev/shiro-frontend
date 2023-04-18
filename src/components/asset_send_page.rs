@@ -21,6 +21,11 @@ struct Recipient {
     consignment_endpoints: Vec<String>,
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct InvoiceParams {
+    bech32_invoice: String,
+}
+
 enum PageMode {
     RGB20,
     RGB121,
@@ -46,6 +51,9 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
     let fee_rate = use_state(|| 0.0f32);
     let invalid_form = use_state(|| true);
     let precision = use_state(|| 0i32);
+    let invoice = use_state(|| "".to_string());
+    let message2 = use_state(|| "".to_string());
+    let decoding = use_state(|| false);
 
     let onload = {
         match *page_mode {
@@ -179,6 +187,48 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
             });
         })
     };
+
+    let onclick2 = {
+        let decoding = decoding.clone();
+        let message2 = message2.clone();
+        let invoice = invoice.clone();
+        Callback::from(move |_: MouseEvent| {
+            let baseurl = web_sys::window().unwrap().origin();
+            let client = reqwest::Client::new();
+            let decoding = decoding.clone();
+            let message2 = message2.clone();
+            let invoice = invoice.clone();
+            spawn_local(async move {
+                decoding.set(true);
+                let invoice_params = InvoiceParams {
+                    bech32_invoice: invoice.to_string(),
+                };
+                let res = client
+                    .put(API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned() + "/wallet/invoice")
+                    .json(&invoice_params)
+                    .send()
+                    .await;
+                decoding.set(false);
+                match res {
+                    Ok(res) => match res.text().await {
+                        Ok(json) => {
+                            log::info!("1 {:#?}", json);
+                            message2.set(json);
+                        }
+                        Err(e) => {
+                            log::info!("2 {:?}", e);
+                            message2.set(e.to_string());
+                        }
+                    },
+                    Err(e) => {
+                        log::info!("3 {:?}", e);
+                        message2.set(e.to_string());
+                    }
+                }
+            });
+        })
+    };
+
     let oninput_pay_to = {
         let pay_to = pay_to.clone();
         Callback::from(move |value: String| {
@@ -204,6 +254,13 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
                 Ok(v) => fee_rate.set(v),
                 Err(v) => log::error!("{:#?}", v),
             };
+        })
+    };
+
+    let oninput_invoice = {
+        let invoice = invoice.clone();
+        Callback::from(move |value: String| {
+            invoice.set(value);
         })
     };
 
@@ -239,6 +296,32 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
             }
             <p class="message">{(*message).to_string()}</p>
         </div>
+
+        <div class="m-3">
+            <p>
+                <a class="" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                {"Decode Invoice"}
+                </a>
+            </p>
+        </div>
+        <div class="collapse" id="collapseExample">
+            <div class="card card-body">
+                <div>
+                    <MatTextField outlined=true label="invoice" value={(*invoice).clone()} oninput={oninput_invoice}/>
+                </div>
+                <div class="m-3">
+                    if *decoding {
+                        <MatCircularProgress indeterminate=true />
+                    } else {
+                        <div onclick={onclick2}>
+                            <MatButton label="DECODE" raised=true />
+                        </div>
+                    }
+                    <p class="message">{(*message2).to_string()}</p>
+                </div>
+            </div>
+        </div>
+
 
         {onload}
 
