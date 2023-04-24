@@ -20,7 +20,7 @@ pub struct Utxo {
 
 #[derive(Deserialize, Serialize, Clone, PartialEq)]
 pub struct RgbAllocations {
-    pub asset_id: String,
+    pub asset_id: Option<String>,
     pub amount: String,
     pub settled: bool,
 }
@@ -108,7 +108,9 @@ pub fn utxo_list(_props: &UtxosListProps) -> Html {
     let onload = {
         let baseurl = web_sys::window().unwrap().origin();
         let message = message.clone();
-        let unspents = UnspentsParams { settled_only: true };
+        let unspents = UnspentsParams {
+            settled_only: false,
+        };
         let client = reqwest::Client::new();
         let u_list = utxo_list.clone();
         spawn_local(async move {
@@ -150,8 +152,14 @@ pub fn utxo_list(_props: &UtxosListProps) -> Html {
                             </div>
                             <div class="d-flex w-100 justify-content-between">
                                 if !utxo_rgb.rgb_allocations.is_empty() {
-                                    <div class="mb-1 truncate">{utxo_rgb.rgb_allocations[0].asset_id.clone()}</div>
-                                    <div class="mb-1">{utxo_rgb.rgb_allocations[0].amount.clone()}</div>
+                                    <div class="mb-1 truncate">{utxo_rgb.rgb_allocations[0].asset_id.clone().unwrap_or_default()}</div>
+                                    <div class="mb-1">
+                                        if utxo_rgb.rgb_allocations[0].settled {
+                                            <div class="mb-1">{utxo_rgb.rgb_allocations[0].amount.clone()} {" settled"}</div>
+                                        } else {
+                                            <div class="mb-1">{utxo_rgb.rgb_allocations[0].amount.clone()} {" pending"}</div>
+                                        }
+                                    </div>
                                 } else {
                                     <div class="mb-1 truncate">{""}</div>
                                     <div class="mb-1">{""}</div>
