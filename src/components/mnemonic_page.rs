@@ -268,7 +268,7 @@ pub fn page(_: &PageProps) -> Html {
                         };
                         let go_online = GoOnlineParams {
                             skip_consistency_check: true,
-                            electrum_url: "shiro.westus2.cloudapp.azure.com:50001".to_string(),
+                            electrum_url: "testnet.aranguren.org:51001".to_string(),
                         };
                         let client = reqwest::Client::new();
                         spawn_local(async move {
