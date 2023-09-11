@@ -15,8 +15,8 @@ const API_ROOT: Option<&'static str> = option_env!("API_ROOT");
 pub enum AssetType {
     /// Rgb20 schema for fungible assets
     Rgb20,
-    /// Rgb121 schema for non-fungible assets
-    Rgb121,
+    /// Rgb25 schema for non-fungible assets
+    Rgb25,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -47,7 +47,7 @@ pub struct AssetRgb20 {
 }
 
 #[derive(Deserialize, Serialize, Clone, PartialEq)]
-pub struct AssetRgb121 {
+pub struct AssetRgb25 {
     pub asset_id: String,
     pub name: String,
     pub precision: u8,
@@ -60,7 +60,7 @@ pub struct AssetRgb121 {
 #[derive(Deserialize, Serialize, PartialEq)]
 pub struct Assets {
     pub rgb20: Vec<AssetRgb20>,
-    pub rgb121: Vec<AssetRgb121>,
+    pub rgb25: Vec<AssetRgb25>,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -82,7 +82,7 @@ pub fn page(_props: &BalancePageProps) -> Html {
     let message = use_state(|| "".to_string());
     let tab = use_state(|| Tabs::Fungible);
     let fungible_list = use_state_eq(Vec::<AssetRgb20>::new);
-    let nft_list = use_state_eq(Vec::<AssetRgb121>::new);
+    let nft_list = use_state_eq(Vec::<AssetRgb25>::new);
 
     let on_activated = {
         let tab = tab.clone();
@@ -113,7 +113,7 @@ pub fn page(_props: &BalancePageProps) -> Html {
                         //match res.json::<AssetsResult>().await {
                         Ok(json) => {
                             f_list.set(json.assets.rgb20);
-                            n_list.set(json.assets.rgb121);
+                            n_list.set(json.assets.rgb25);
                             log::info!("Got assets");
                         }
                         Err(e) => {

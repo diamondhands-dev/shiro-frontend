@@ -18,7 +18,7 @@ pub struct SendParams {
 struct Recipient {
     blinded_utxo: String,
     amount: String,
-    consignment_endpoints: Vec<String>,
+    transport_endpoints: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -28,7 +28,7 @@ pub struct InvoiceParams {
 
 enum PageMode {
     RGB20,
-    RGB121,
+    RGB25,
     Unknown,
 }
 #[derive(Properties, PartialEq)]
@@ -100,18 +100,18 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
                                     }
                                 }
                                 {
-                                    let rgb121s = json
+                                    let rgb25s = json
                                         .assets
-                                        .rgb121
+                                        .rgb25
                                         .into_iter()
                                         .filter(|x| x.asset_id == *asset_id)
                                         .collect::<Vec<_>>();
-                                    if rgb121s.len() == 1 {
-                                        let rgb121 = rgb121s[0].clone();
-                                        page_mode.set(PageMode::RGB121);
-                                        asset_id.set(rgb121.asset_id.clone());
+                                    if rgb25s.len() == 1 {
+                                        let rgb25 = rgb25s[0].clone();
+                                        page_mode.set(PageMode::RGB25);
+                                        asset_id.set(rgb25.asset_id.clone());
                                         total_balance
-                                            .set(rgb121.balance.spendable.parse().unwrap());
+                                            .set(rgb25.balance.spendable.parse().unwrap());
                                     }
                                 }
                             }
@@ -123,7 +123,7 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
                 });
             }
             PageMode::RGB20 => {}
-            PageMode::RGB121 => {}
+            PageMode::RGB25 => {}
         }
         html! { <></> }
     };
@@ -154,8 +154,8 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
                         vec![Recipient {
                             blinded_utxo: (*pay_to).clone(),
                             amount: (*amount_to_pay * 10f64.powi(*precision)).to_string(),
-                            consignment_endpoints: vec![
-                                "rgbhttpjsonrpc:http://proxy.rgbtools.org/json-rpc".to_string(),
+                            transport_endpoints: vec![
+                                "rpc://proxy.rgbtools.org/json-rpc".to_string(),
                             ],
                         }],
                     )]),

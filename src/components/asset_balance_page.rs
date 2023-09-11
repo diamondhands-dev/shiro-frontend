@@ -34,7 +34,7 @@ pub struct TransfersParams {
 
 enum PageMode {
     RGB20,
-    RGB121,
+    RGB25,
     Unknown,
 }
 
@@ -132,19 +132,19 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                                     }
                                 }
                                 {
-                                    let rgb121s = json
+                                    let rgb25s = json
                                         .assets
-                                        .rgb121
+                                        .rgb25
                                         .into_iter()
                                         .filter(|x| x.asset_id == *asset_id)
                                         .collect::<Vec<_>>();
-                                    if rgb121s.len() == 1 {
-                                        let rgb121 = rgb121s[0].clone();
-                                        page_mode.set(PageMode::RGB121);
-                                        //asset_id.set(rgb121.asset_id.clone());
-                                        name.set(rgb121.name.clone());
+                                    if rgb25s.len() == 1 {
+                                        let rgb25 = rgb25s[0].clone();
+                                        page_mode.set(PageMode::RGB25);
+                                        //asset_id.set(rgb25.asset_id.clone());
+                                        name.set(rgb25.name.clone());
                                         total_balance
-                                            .set(rgb121.balance.spendable.parse().unwrap());
+                                            .set(rgb25.balance.spendable.parse().unwrap());
                                     }
                                 }
                             }
@@ -182,7 +182,7 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                 });
             }
             PageMode::RGB20 => {}
-            PageMode::RGB121 => {}
+            PageMode::RGB25 => {}
         }
         //let now = std::time::Instant::now();
         //log::info!("{:#?}", now);
