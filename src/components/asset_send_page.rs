@@ -23,7 +23,7 @@ struct Recipient {
 
 #[derive(Serialize, Deserialize)]
 pub struct InvoiceParams {
-    bech32_invoice: String,
+    invoice_string: String,
 }
 
 enum PageMode {
@@ -201,7 +201,7 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
             spawn_local(async move {
                 decoding.set(true);
                 let invoice_params = InvoiceParams {
-                    bech32_invoice: invoice.to_string(),
+                    invoice_string: invoice.to_string(),
                 };
                 let res = client
                     .put(API_ROOT.unwrap_or(&baseurl.to_owned()).to_owned() + "/wallet/invoice")
