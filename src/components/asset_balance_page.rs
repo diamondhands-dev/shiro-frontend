@@ -143,8 +143,7 @@ pub fn asset_balance_page(prop: &AssetBalancePageInnerProp) -> Html {
                                         page_mode.set(PageMode::RGB25);
                                         //asset_id.set(rgb25.asset_id.clone());
                                         name.set(rgb25.name.clone());
-                                        total_balance
-                                            .set(rgb25.balance.spendable.parse().unwrap());
+                                        total_balance.set(rgb25.balance.spendable.parse().unwrap());
                                     }
                                 }
                             }

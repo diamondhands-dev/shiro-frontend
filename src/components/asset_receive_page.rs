@@ -75,9 +75,7 @@ pub fn asset_receive_page(props: &AssetReceivePageInnerProp) -> Html {
                     asset_id,
                     amount: None,
                     duration_seconds: Some(3600), // 1hour
-                    transport_endpoints: vec![
-                        "rpc://proxy.rgbtools.org/json-rpc".to_string(),
-                    ],
+                    transport_endpoints: vec!["rpc://proxy.rgbtools.org/json-rpc".to_string()],
                 };
                 let client = reqwest::Client::new();
                 let res = client

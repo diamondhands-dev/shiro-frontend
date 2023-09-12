@@ -110,8 +110,7 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
                                         let rgb25 = rgb25s[0].clone();
                                         page_mode.set(PageMode::RGB25);
                                         asset_id.set(rgb25.asset_id.clone());
-                                        total_balance
-                                            .set(rgb25.balance.spendable.parse().unwrap());
+                                        total_balance.set(rgb25.balance.spendable.parse().unwrap());
                                     }
                                 }
                             }
@@ -155,7 +154,7 @@ pub fn asset_send_page(prop: &AssetSendPageInnerProp) -> Html {
                             blinded_utxo: (*pay_to).clone(),
                             amount: (*amount_to_pay * 10f64.powi(*precision)).to_string(),
                             transport_endpoints: vec![
-                                "rpc://proxy.rgbtools.org/json-rpc".to_string(),
+                                "rpc://proxy.rgbtools.org/json-rpc".to_string()
                             ],
                         }],
                     )]),
