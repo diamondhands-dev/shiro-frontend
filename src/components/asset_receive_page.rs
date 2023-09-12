@@ -12,7 +12,7 @@ pub struct BlindParams {
     asset_id: Option<String>,
     amount: Option<String>,
     duration_seconds: Option<u32>,
-    consignment_endpoints: Vec<String>,
+    transport_endpoints: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -75,8 +75,8 @@ pub fn asset_receive_page(props: &AssetReceivePageInnerProp) -> Html {
                     asset_id,
                     amount: None,
                     duration_seconds: Some(3600), // 1hour
-                    consignment_endpoints: vec![
-                        "rgbhttpjsonrpc:http://proxy.rgbtools.org/json-rpc".to_string(),
+                    transport_endpoints: vec![
+                        "rpc://proxy.rgbtools.org/json-rpc".to_string(),
                     ],
                 };
                 let client = reqwest::Client::new();
