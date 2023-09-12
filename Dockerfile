@@ -1,4 +1,4 @@
-FROM rust:1.72-slim-bullseye as builder
+FROM rust:1.72-bullseye as builder
 
 RUN apt-get update \
  && apt-get install clang git-core -y \
