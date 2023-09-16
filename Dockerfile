@@ -3,7 +3,7 @@ FROM rust:1.72-bullseye as builder
 RUN apt-get update \
  && apt-get install clang git-core -y \
  && rustup target add wasm32-unknown-unknown \
- && cargo install --config net.git-fetch-with-cli=true trunk@0.17.0
+ && cargo install --config net.git-fetch-with-cli=true trunk@0.16.0
 COPY ./ ./
 RUN trunk build
 
