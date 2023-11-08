@@ -82,7 +82,6 @@ pub fn page(_props: &IssueAssetPageProps) -> Html {
 
             let ticker = ticker.clone();
             let name = name.clone();
-            let presision = presision;
             let amounts = amounts.clone().iter().map(|s| s.to_string()).collect();
 
             let asset = IssueParams {
