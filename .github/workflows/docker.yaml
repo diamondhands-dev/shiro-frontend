@@ -1,6 +1,9 @@
 name: Docker container image
 
 on:
+  pull_request:
+    branches:
+      - 'main'
   push:
     branches-ignore:
       - '**'
@@ -41,7 +44,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          push: true
+          push: ${{ github.event_name == 'push' }}
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
