@@ -1,9 +1,9 @@
 FROM rust:1.72-bullseye as builder
 
 RUN apt-get update \
- && apt-get install clang git-core -y \
+ && apt-get install clang -y \
  && rustup target add wasm32-unknown-unknown \
- && cargo install --config net.git-fetch-with-cli=true trunk@0.16.0
+ && CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse cargo install trunk@0.16.0
 COPY ./ ./
 RUN trunk build
 
